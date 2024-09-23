@@ -16,3 +16,9 @@ uvicorn[standard]
 pydantic
 pydantic-settings
 safir>=5
+numpy
+astropy
+vo-models
+defusedxml
+git+https://github.com/lsst/daf_butler@main
+git+https://github.com/lsst-dm/dax_obscore.git@tickets/DM-45860

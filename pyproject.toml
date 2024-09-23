@@ -35,6 +35,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 
+[tool.setuptools.package-data]
+"vosiav2" = ["templates/*.xml"]
+
 [tool.coverage.run]
 parallel = true
 branch = true
@@ -62,7 +65,7 @@ disallow_untyped_defs = true
 disallow_incomplete_defs = true
 ignore_missing_imports = true
 local_partial_types = true
-plugins = ["pydantic.mypy"]
+plugins = ["pydantic.mypy","pydantic_xml.mypy"]
 no_implicit_reexport = true
 show_error_codes = true
 strict_equality = true
@@ -87,6 +90,7 @@ asyncio_mode = "strict"
 # with complex data structures rather than only the assert message) in files
 # listed in python_files.
 python_files = ["tests/*.py", "tests/*/*.py"]
+asyncio_default_fixture_loop_scope = "function"
 
 # Use the generic Ruff configuration in ruff.toml and extend it with only
 # project-specific settings. Add a [tool.ruff.lint.extend-per-file-ignores]
