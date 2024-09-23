@@ -6,6 +6,33 @@ from ..exceptions import FatalFaultError, UsageFaultError
 from ..models.data_collections import DataCollection
 
 
+def get_default_collection(config: Config) -> DataCollection:
+    """Return the default Data collection.
+
+    Parameters
+    ----------
+    config
+        The configuration object.
+
+    Returns
+    -------
+    DataCollection
+        The default Data collection.
+
+    Raises
+    ------
+    FatalFaultError
+        If no default Data collection is found.
+    """
+    for collection in config.data_collections:
+        if collection.default:
+            return collection
+
+    raise FatalFaultError(
+        detail="No default Data Collection found. Please configure a default."
+    )
+
+
 def get_data_collection(label: str | None, config: Config) -> DataCollection:
     """Return the Data collection URL for the given label.
     If no label is provided, return the default data collection.

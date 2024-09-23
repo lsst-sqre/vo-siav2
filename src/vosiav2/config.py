@@ -48,11 +48,6 @@ class Config(BaseSettings):
     ] = COLLECTIONS
     """Configuration for the query engine."""
 
-    default_collection_label: str | None = Field(
-        None, title="Default Butler collection label"
-    )
-    """Default Butler collection."""
-
     slack_webhook: Annotated[
         HttpUrl | None, Field(title="Slack webhook for exception reporting")
     ] = None

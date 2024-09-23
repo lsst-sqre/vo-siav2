@@ -10,3 +10,4 @@ class DataCollection:
     config: str | None = None
     label: str | None = None
     repository: str | None = None
+    default: bool = False

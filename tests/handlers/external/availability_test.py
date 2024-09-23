@@ -89,7 +89,6 @@ async def test_remote_butler_availability_no_config(
     checker = RemoteButlerAvailabilityChecker()
     conf = Config()
     conf.data_collections = []
-    conf.default_collection_label = None
     availability = await checker.check_availability(config=conf)
     assert availability.available is False
 

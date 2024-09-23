@@ -20,7 +20,10 @@ from ..exceptions import handle_exceptions
 from ..factories.param_factory import ParamFactory
 from ..factories.query_engine_factory import QueryEngineFactory
 from ..models import Index, SIAv2QueryParams
-from ..services.config_reader import get_data_collection
+from ..services.config_reader import (
+    get_data_collection,
+    get_default_collection,
+)
 from ..services.timer import timer
 from ..services.votable import VOTableConverter
 
@@ -230,9 +233,7 @@ def query(
     collection = (
         get_data_collection(label=params.collection[0], config=config)
         if params.collection is not None and len(params.collection) > 0
-        else get_data_collection(
-            label=config.default_collection_label, config=config
-        )
+        else get_default_collection(config=config)
     )
 
     # Create the query engine and execute the query.

@@ -8,7 +8,7 @@ from vo_models.vosi.availability import Availability
 from ..config import Config
 from ..exceptions import FatalFaultError
 from ..models.query_engines import QueryEngines
-from .config_reader import get_data_collection
+from .config_reader import get_default_collection
 
 
 class AvailabilityChecker(ABC):
@@ -71,9 +71,7 @@ class RemoteButlerAvailabilityChecker(AvailabilityChecker):
         """
         async with AsyncClient() as client:
             try:
-                default_collection = get_data_collection(
-                    label=config.default_collection_label, config=config
-                )
+                default_collection = get_default_collection(config=config)
 
                 repository = default_collection.repository
                 r = await client.get(repository) if repository else None

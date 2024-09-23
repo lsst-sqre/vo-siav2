@@ -92,12 +92,12 @@ async def test_config_remote() -> Config:
                 "https://data-dev.lsst.cloud/api/butler/repo/dp02"
                 "/butler.yaml"
             ),
+            default=True,
         ),
     ]
     return Config(
         query_engine=QueryEngines.REMOTE_BUTLER,
         data_collections=butler_collections,
-        default_collection_label="LSST.DP02",
     )
 
 
@@ -116,13 +116,11 @@ async def test_config_direct() -> Config:
 
     butler_collections = [
         DataCollection(
-            config=str(config_file),
-            repository=str(repo_path),
+            config=str(config_file), repository=str(repo_path), default=True
         ),
     ]
 
     return Config(
         query_engine=QueryEngines.DIRECT_BUTLER,
         data_collections=butler_collections,
-        default_collection_label="LSST.DP02",
     )

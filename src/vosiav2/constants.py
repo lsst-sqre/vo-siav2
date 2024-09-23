@@ -22,6 +22,7 @@ COLLECTIONS = [
         repository=(
             "https://data-dev.lsst.cloud/api/butler/repo/dp02/butler.yaml"
         ),
+        default=True,
     ),
 ]
 
