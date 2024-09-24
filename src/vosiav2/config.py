@@ -35,7 +35,7 @@ class Config(BaseSettings):
     """Log level of the application's logger."""
 
     model_config = SettingsConfigDict(
-        env_prefix="VO_SIAV2_", case_sensitive=False
+        env_prefix="SIAV2_", case_sensitive=False
     )
     """Configuration for the model settings."""
 
