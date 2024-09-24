@@ -19,8 +19,11 @@ certifi==2024.8.30
     # via
     #   httpcore
     #   httpx
+    #   requests
 cffi==1.17.1
     # via cryptography
+charset-normalizer==3.3.2
+    # via requests
 click==8.1.7
     # via
     #   lsst-daf-butler
@@ -64,6 +67,7 @@ idna==3.10
     # via
     #   anyio
     #   httpx
+    #   requests
 jinja2==3.1.4
     # via -r requirements/main.in
 lsst-daf-butler @ git+https://github.com/lsst/daf_butler@8c62bcfed2e13399dc93963b30ce8fb958dbec0e
@@ -149,6 +153,8 @@ pyyaml==6.0.2
     #   lsst-felis
     #   lsst-utils
     #   uvicorn
+requests==2.32.3
+    # via -r requirements/main.in
 safir==6.4.0
     # via -r requirements/main.in
 safir-logging==6.4.0
@@ -182,6 +188,8 @@ typing-extensions==4.12.2
     #   sqlalchemy
 uritemplate==4.1.1
     # via gidgethub
+urllib3==2.2.3
+    # via requests
 uvicorn==0.30.6
     # via -r requirements/main.in
 uvloop==0.20.0
