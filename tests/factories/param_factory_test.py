@@ -52,17 +52,7 @@ def siav2_params() -> SIAv2QueryParams:
 def test_param_factory(
     engine: QueryEngines, expected_type: Any, siav2_params: SIAv2QueryParams
 ) -> None:
-    """Test the ParamFactory class.
-
-    Parameters
-    ----------
-    engine
-        The query engine to use.
-    expected_type
-        The expected type of the engine-specific parameters.
-    siav2_params
-        The SIAv2QueryParams instance
-    """
+    """Test the ParamFactory class."""
     config = Config(query_engine=engine)
     factory = ParamFactory(config)
     adapter = factory.create_params(siav2_params)

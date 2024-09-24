@@ -13,6 +13,7 @@ starlette
 uvicorn[standard]
 
 # Other dependencies.
+jinja2
 pydantic
 pydantic-settings
 safir>=5

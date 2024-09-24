@@ -52,11 +52,15 @@ idna==3.10
 iniconfig==2.0.0
     # via pytest
 jinja2==3.1.4
-    # via scriv
+    # via
+    #   -c requirements/main.txt
+    #   scriv
 markdown-it-py==3.0.0
     # via scriv
 markupsafe==2.1.5
-    # via jinja2
+    # via
+    #   -c requirements/main.txt
+    #   jinja2
 mdurl==0.1.2
     # via markdown-it-py
 mypy==1.11.2

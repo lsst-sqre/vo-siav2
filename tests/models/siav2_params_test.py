@@ -16,6 +16,8 @@ from vosiav2.models.siav2_query_params import (
 
 @pytest.mark.asyncio
 async def test_case_insensitive_enum() -> None:
+    """Test the CaseInsensitiveEnum class."""
+
     class TestEnum(CaseInsensitiveEnum):
         A = "a"
         B = "b"
@@ -31,6 +33,7 @@ async def test_case_insensitive_enum() -> None:
 
 @pytest.mark.asyncio
 async def test_shape_enum() -> None:
+    """Test the Shape enum."""
     assert Shape("circle") == Shape.CIRCLE
     assert Shape("RANGE") == Shape.RANGE
     assert Shape("Polygon") == Shape.POLYGON
@@ -41,6 +44,7 @@ async def test_shape_enum() -> None:
 
 @pytest.mark.asyncio
 async def test_dptype_enum() -> None:
+    """Test the DPType enum."""
     assert DPType("image") == DPType.IMAGE
     assert DPType("CUBE") == DPType.CUBE
 
@@ -50,6 +54,7 @@ async def test_dptype_enum() -> None:
 
 @pytest.mark.asyncio
 async def test_polarization_enum() -> None:
+    """Test the Polarization enum."""
     assert Polarization("i") == Polarization.I
     assert Polarization("RR") == Polarization.RR
     assert Polarization("xy") == Polarization.XY
@@ -60,6 +65,7 @@ async def test_polarization_enum() -> None:
 
 @pytest.mark.asyncio
 async def test_siav2params_initialization() -> None:
+    """Test the initialization of SIAv2QueryParams."""
     params = SIAv2QueryParams(
         pos=["CIRCLE 0 1 1"],
         q_format=["application/fits"],
@@ -105,6 +111,7 @@ async def test_siav2params_initialization() -> None:
 
 @pytest.mark.asyncio
 async def test_siav2params_default_values() -> None:
+    """Test the default values of SIAv2QueryParams."""
     params = SIAv2QueryParams()
 
     assert params.pos is None

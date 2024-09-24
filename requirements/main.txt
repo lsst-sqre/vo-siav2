@@ -64,6 +64,8 @@ idna==3.10
     # via
     #   anyio
     #   httpx
+jinja2==3.1.4
+    # via -r requirements/main.in
 lsst-daf-butler @ git+https://github.com/lsst/daf_butler@8c62bcfed2e13399dc93963b30ce8fb958dbec0e
     # via
     #   -r requirements/main.in
@@ -91,6 +93,8 @@ lsst-utils==27.2024.3800
     #   lsst-resources
 lxml==5.3.0
     # via pydantic-xml
+markupsafe==2.1.5
+    # via jinja2
 numpy==2.1.1
     # via
     #   -r requirements/main.in
