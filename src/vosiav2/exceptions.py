@@ -11,8 +11,8 @@ from typing import ParamSpec, TypeVar
 import structlog
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException, RequestValidationError
+from fastapi.templating import Jinja2Templates
 from starlette.exceptions import HTTPException as StarletteHTTPException
-from starlette.templating import Jinja2Templates
 
 _TEMPLATES = Jinja2Templates(
     directory=str(Path(__file__).resolve().parent / "templates")

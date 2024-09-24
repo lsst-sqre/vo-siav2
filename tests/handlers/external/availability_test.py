@@ -8,8 +8,8 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 from fastapi import APIRouter
+from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
-from starlette.templating import Jinja2Templates
 
 from vosiav2.config import Config
 from vosiav2.models.query_engines import QueryEngines
