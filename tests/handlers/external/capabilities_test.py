@@ -25,9 +25,11 @@ async def test_capabilities(client: AsyncClient) -> None:
     templates_dir = Jinja2Templates(template_dir)
 
     context = {
-        "capabilities_url": "https://example.com/api/siav2/capabilities",
-        "availability_url": "https://example.com/api/siav2/availability",
-        "query_url": "https://example.com/api/siav2/query",
+        "capabilities_url": f"https://example.com"
+        f"{config.path_prefix}/capabilities",
+        "availability_url": f"https://example.com"
+        f"{config.path_prefix}/availability",
+        "query_url": f"https://example.com{config.path_prefix}/query",
     }
 
     r = await client.get(f"{config.path_prefix}/capabilities")

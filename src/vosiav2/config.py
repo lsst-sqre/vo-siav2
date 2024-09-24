@@ -21,7 +21,7 @@ class Config(BaseSettings):
     name: str = Field("vo-siav2", title="Name of application")
     """Name of application."""
 
-    path_prefix: str = Field("/api/siav2", title="URL prefix for application")
+    path_prefix: str = Field("/api/images", title="URL prefix for application")
     """URL prefix for application."""
 
     profile: Profile = Field(
