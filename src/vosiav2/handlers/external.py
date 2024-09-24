@@ -191,7 +191,7 @@ def query(
     logger: Annotated[BoundLogger, Depends(logger_dependency)],
     delegated_token: Annotated[
         str | None, Depends(optional_auth_delegated_token_dependency)
-    ] = None,
+    ],
 ) -> Response:
     """Endpoint used to query the SIAv2 service using various
     parameters defined in the SIAv2 spec. The response is an XML VOTable file

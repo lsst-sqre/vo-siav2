@@ -70,7 +70,7 @@ def get_data_collection(label: str | None, config: Config) -> DataCollection:
             return collection
 
     raise UsageFaultError(
-        detail="Label {label} not found in Data collections."
+        detail=f"Label {label} not found in Data collections."
     )
 
 
