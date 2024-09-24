@@ -9,6 +9,7 @@ from lsst.daf.butler import Config as ButlerConfig
 from lsst.dax.obscore import ExporterConfig
 
 from ..config import Config
+from ..exceptions import FatalFaultError
 from ..models.query_engines import QueryEngines
 from ..services.base_query_engine import SIAv2BaseQueryEngine
 from ..services.butler_query_engine import (
@@ -136,12 +137,15 @@ class QueryEngineFactory:
         butler_config = kwargs.get("config")
 
         if not butler_label:
-            raise ValueError("No Butler label configured <label>")
+            raise FatalFaultError(detail="No Butler label configured <label>")
         if not token:
-            raise ValueError("Token is required for RemoteButlerQueryEngine")
+            raise FatalFaultError(
+                detail="Token is required for RemoteButlerQueryEngine"
+            )
         if not butler_config:
-            raise ValueError(
-                "No Butler configuration file configured <butler_config>"
+            raise FatalFaultError(
+                detail="No Butler configuration file configured "
+                "<butler_config>"
             )
 
         butler_factory = LabeledButlerFactory(data_repositories)
