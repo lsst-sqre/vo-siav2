@@ -12,7 +12,6 @@ import structlog
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.templating import Jinja2Templates
-from starlette.exceptions import HTTPException as StarletteHTTPException
 
 _TEMPLATES = Jinja2Templates(
     directory=str(Path(__file__).resolve().parent / "templates")
@@ -206,7 +205,7 @@ def configure_exception_handlers(app: FastAPI) -> None:
         The FastAPI application instance.
     """
 
-    @app.exception_handler(StarletteHTTPException)
+    @app.exception_handler(VOTableError)
     @app.exception_handler(RequestValidationError)
     @app.exception_handler(Exception)
     async def custom_exception_handler(

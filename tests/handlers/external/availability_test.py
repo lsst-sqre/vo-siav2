@@ -11,7 +11,7 @@ from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
 
-from vosiav2.config import Config
+from vosiav2.config import Config, config
 from vosiav2.models.query_engines import QueryEngines
 from vosiav2.services.availability import (
     AvailabilityService,
@@ -30,7 +30,7 @@ async def test_availability(client: AsyncClient) -> None:
         directory=str(Path(__file__).parent.parent.parent / "templates")
     )
 
-    r = await client.get("/vo-siav2/availability")
+    r = await client.get(f"{config.path_prefix}/availability")
     assert r.status_code == 200
     template_rendered = templates_dir.get_template("availability.xml").render()
     assert r.text.strip() == template_rendered.strip()

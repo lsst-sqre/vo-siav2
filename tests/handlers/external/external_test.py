@@ -14,8 +14,8 @@ from vosiav2.constants import RESULT_NAME
 
 @pytest.mark.asyncio
 async def test_get_index(client: AsyncClient) -> None:
-    """Test ``GET /vo-siav2/``."""
-    response = await client.get("/vo-siav2/")
+    """Test ``GET /api/siav2/``."""
+    response = await client.get(f"{config.path_prefix}/")
     assert response.status_code == 200
     data = response.json()
     metadata = data["metadata"]
@@ -77,11 +77,11 @@ async def test_query_endpoint_mocker(
     mock_query_engine: MockButlerEngine,
     expected_votable: str,
 ) -> None:
-    """Test ``GET /vo-siav2/query`` with valid parameters but use a Mocker
+    """Test ``GET /api/siav2/query`` with valid parameters but use a Mocker
     for the query engine.
     """
     response = await client.get(
-        f"/vo-siav2/query?{query_params}",
+        f"{config.path_prefix}/query?{query_params}",
     )
     assert response.text == expected_votable
     assert response.status_code == expected_status
@@ -136,8 +136,8 @@ async def test_query_endpoint(
     expected_message: str | None,
     mock_query_engine: MockButlerEngine,
 ) -> None:
-    """Test ``GET /vo-siav2/query`` with various parameters."""
-    response = await client.get(f"/vo-siav2/query?{query_params}")
+    """Test ``GET /api/siav2/query`` with various parameters."""
+    response = await client.get(f"{config.path_prefix}/query?{query_params}")
 
     assert response.status_code == expected_status
     assert expected_content_type in response.headers["content-type"]

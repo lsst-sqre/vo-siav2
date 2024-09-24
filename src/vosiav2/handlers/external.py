@@ -1,4 +1,4 @@
-"""Handlers for the app's external root, ``/vo-siav2/``."""
+"""Handlers for the app's external root, ``/api/siav2/``."""
 
 from pathlib import Path
 from typing import Annotated
@@ -49,7 +49,7 @@ external_router = APIRouter()
 async def get_index(
     logger: Annotated[BoundLogger, Depends(logger_dependency)],
 ) -> Index:
-    """GET ``/vo-siav2/`` (the app's external root).
+    """GET ``/api/siav2/`` (the app's external root).
 
     Customize this handler to return whatever the top-level resource of your
     application should return. For example, consider listing key API URLs.
@@ -102,7 +102,7 @@ async def get_availability(
     Response
         The response containing the VOSI-availability XML document.
 
-    ## GET /vo-siav2/availability
+    ## GET /api/siav2/availability
 
     **Example XML Response**:
     ```xml
@@ -142,7 +142,7 @@ async def get_capabilities(
     Response
         The response containing the VOSI-capabilities XML document.
 
-    ## GET /vo-siav2/capabilities
+    ## GET /api/siav2/capabilities
 
     **Example XML Response**:
     ```xml
@@ -215,11 +215,11 @@ def query(
     Response
         The response containing the query results.
 
-    ## GET /vo-siav2/query
+    ## GET /api/siav2/query
 
     **Example Query**:
     ```
-    /vo-siav2/query?POS=CIRCLE+321+0+1&BAND=700e-9&FORMAT=votable
+    /api/siav2/query?POS=CIRCLE+321+0+1&BAND=700e-9&FORMAT=votable
     ```
     **Response**:
     A VOTable XML response contains a table conforming to the ObsCore standard.

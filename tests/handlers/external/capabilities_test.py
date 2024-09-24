@@ -10,6 +10,8 @@ from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
 
+from vosiav2.config import config
+
 router = APIRouter()
 """FastAPI router for all external handlers."""
 
@@ -23,12 +25,12 @@ async def test_capabilities(client: AsyncClient) -> None:
     templates_dir = Jinja2Templates(template_dir)
 
     context = {
-        "capabilities_url": "https://example.com/vo-siav2/capabilities",
-        "availability_url": "https://example.com/vo-siav2/availability",
-        "query_url": "https://example.com/vo-siav2/query",
+        "capabilities_url": "https://example.com/api/siav2/capabilities",
+        "availability_url": "https://example.com/api/siav2/availability",
+        "query_url": "https://example.com/api/siav2/query",
     }
 
-    r = await client.get("/vo-siav2/capabilities")
+    r = await client.get(f"{config.path_prefix}/capabilities")
     assert r.status_code == 200
     template_rendered = templates_dir.get_template("capabilities.xml").render(
         context
