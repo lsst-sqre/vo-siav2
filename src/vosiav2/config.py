@@ -8,6 +8,7 @@ from pydantic import Field, HttpUrl
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from safir.logging import LogLevel, Profile
 
+from .constants import COLLECTIONS
 from .models.data_collections import DataCollection
 from .models.query_engines import QueryEngines
 
@@ -44,7 +45,7 @@ class Config(BaseSettings):
     data_collections: Annotated[
         list[DataCollection],
         Field(title="Data collections"),
-    ] = []
+    ] = COLLECTIONS
     """Configuration for the query engine."""
 
     slack_webhook: Annotated[
