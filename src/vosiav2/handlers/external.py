@@ -229,22 +229,26 @@ def query(
     # Get the Butler collection configuration.
     # If many collections are provided, for now just look at the first one.
     # This needs to be updated to handle multiple collections.
-
     collection = (
         get_data_collection(label=params.collection[0], config=config)
         if params.collection is not None and len(params.collection) > 0
         else get_default_collection(config=config)
     )
 
-    # Create the query engine and execute the query.
+    # Create the query engine
     query_engine = query_engine_factory.create_query_engine(
         token=delegated_token, label=collection.label, config=collection.config
     )
+
+    # Get the query params in the right format
     query_params = param_factory.create_params(
         siav2_params=params
     ).to_engine_parameters()
 
+    # Execute the query
     table_as_votable = query_engine.siav2_query(query_params)
+
+    # Convert the result to a string
     result = VOTableConverter(table_as_votable).to_string()
 
     # For the moment only VOTable is supported, so we can hardcode the
