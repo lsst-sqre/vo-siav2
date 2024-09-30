@@ -4,6 +4,7 @@ __all__ = [
     "RESPONSEFORMATS",
     "COLLECTIONS",
     "RESULT_NAME",
+    "SINGLE_PARAMS",
 ]
 
 from .models.data_collections import DataCollection
@@ -25,5 +26,11 @@ COLLECTIONS = [
         default=True,
     ),
 ]
-
 """Configuration for a query engine."""
+
+
+SINGLE_PARAMS = {
+    "maxrec",
+    "responseformat",
+}
+"""Parameters that should be treated as single values."""

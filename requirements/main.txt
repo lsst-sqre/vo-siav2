@@ -70,15 +70,15 @@ idna==3.10
     #   requests
 jinja2==3.1.4
     # via -r requirements/main.in
-lsst-daf-butler @ git+https://github.com/lsst/daf_butler@8c62bcfed2e13399dc93963b30ce8fb958dbec0e
+lsst-daf-butler @ git+https://github.com/lsst/daf_butler@ca923c07e74625de8057a45616ee1ec596cfc1e3
     # via
     #   -r requirements/main.in
     #   lsst-dax-obscore
-lsst-daf-relation==27.2024.3800
+lsst-daf-relation==27.2024.3900
     # via lsst-daf-butler
-lsst-dax-obscore @ git+https://github.com/lsst-dm/dax_obscore.git@98f463dcdff39c5ac578cd7c78ec811793ca7206
+lsst-dax-obscore @ git+https://github.com/lsst-dm/dax_obscore.git@f625c28047bc21e22f5898dd3eeb9ae7c0868366
     # via -r requirements/main.in
-lsst-felis==27.2024.3800
+lsst-felis==27.2024.3900
     # via lsst-dax-obscore
 lsst-resources==27.2024.3600
     # via
@@ -88,7 +88,7 @@ lsst-sphgeom==27.2024.3700
     # via
     #   lsst-daf-butler
     #   lsst-dax-obscore
-lsst-utils==27.2024.3800
+lsst-utils==27.2024.3900
     # via
     #   lsst-daf-butler
     #   lsst-daf-relation
@@ -145,6 +145,8 @@ python-dotenv==1.0.1
     # via
     #   pydantic-settings
     #   uvicorn
+python-multipart==0.0.10
+    # via -r requirements/main.in
 pyyaml==6.0.2
     # via
     #   astropy

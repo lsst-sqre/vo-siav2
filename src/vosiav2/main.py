@@ -24,7 +24,7 @@ from .config import config
 from .exceptions import configure_exception_handlers
 from .handlers.external import external_router
 from .handlers.internal import internal_router
-from .middleware.ivoa import CaseInsensitiveQueryMiddleware
+from .middleware.ivoa import CaseInsensitiveQueryAndBodyMiddleware
 
 __all__ = ["app"]
 
@@ -59,7 +59,7 @@ app = FastAPI(
 """The main FastAPI application for vo-siav2."""
 
 # Address case-sensitivity issue with IVOA query parameters
-app.add_middleware(CaseInsensitiveQueryMiddleware)
+app.add_middleware(CaseInsensitiveQueryAndBodyMiddleware)
 
 # Configure exception handlers.
 configure_exception_handlers(app)

@@ -7,25 +7,26 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
 from safir.dependencies.logger import logger_dependency
 from safir.metadata import get_metadata
+from safir.models import ErrorModel
+from starlette.concurrency import run_in_threadpool
 from starlette.responses import Response
 from structlog.stdlib import BoundLogger
 from vo_models.vosi.availability import Availability
 
 from ..config import config
-from ..constants import RESULT_NAME
 from ..dependencies.availability import get_availability_dependency
-from ..dependencies.query import get_param_factory, get_query_engine_factory
+from ..dependencies.query import (
+    get_param_factory,
+    get_query_engine_factory,
+    siav2_post_params_dependency,
+)
 from ..dependencies.token import optional_auth_delegated_token_dependency
 from ..exceptions import handle_exceptions
 from ..factories.param_factory import ParamFactory
 from ..factories.query_engine_factory import QueryEngineFactory
 from ..models import Index, SIAv2QueryParams
-from ..services.config_reader import (
-    get_data_collection,
-    get_default_collection,
-)
+from ..services.query_processor import process_query
 from ..services.timer import timer
-from ..services.votable import VOTableConverter
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 _TEMPLATES = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
@@ -168,7 +169,7 @@ async def get_capabilities(
             "request": request,
             "availability_url": request.url_for("get_availability"),
             "capabilities_url": request.url_for("get_capabilities"),
-            "query_url": request.url_for("query"),
+            "query_url": request.url_for("query_get"),
         },
         media_type="application/xml",
     )
@@ -177,12 +178,18 @@ async def get_capabilities(
 @external_router.get(
     "/query",
     description="Query endpoint for the SIAv2 service.",
-    responses={200: {"content": {"application/xml": {}}}},
+    responses={
+        200: {"content": {"application/xml": {}}},
+        400: {
+            "description": "Invalid query parameters",
+            "model": ErrorModel,
+        },
+    },
     summary="IVOA SIAv2 service query",
 )
 @timer
 @handle_exceptions
-def query(
+def query_get(
     query_engine_factory: Annotated[
         QueryEngineFactory, Depends(get_query_engine_factory)
     ],
@@ -194,8 +201,8 @@ def query(
     ],
 ) -> Response:
     """Endpoint used to query the SIAv2 service using various
-    parameters defined in the SIAv2 spec. The response is an XML VOTable file
-    that adheres the Obscore model.
+    parameters defined in the SIAv2 spec via a GET request.
+    The response is an XML VOTable file that adheres the Obscore model.
 
     Parameters
     ----------
@@ -215,49 +222,103 @@ def query(
     Response
         The response containing the query results.
 
-    ## GET /api/siav2/query
+    Examples
+    --------
+    ### GET /api/siav2/query
+    ```
+    /api/images/query?POS=CIRCLE+321+0+1&BAND=700e-9&FORMAT=votable
+    ```
 
-    **Example Query**:
-    ```
-    /api/siav2/query?POS=CIRCLE+321+0+1&BAND=700e-9&FORMAT=votable
-    ```
-    **Response**:
-    A VOTable XML response contains a table conforming to the ObsCore standard.
+    See Also
+    --------
+    SIAv2 Specification: http://www.ivoa.net/documents/SIA/
+    ObsCore Data Model: http://www.ivoa.net/documents/ObsCore/
     """
-    logger.info("Processing SIAv2 query with params:", params=params)
-
-    # Get the Butler collection configuration.
-    # If many collections are provided, for now just look at the first one.
-    # This needs to be updated to handle multiple collections.
-    collection = (
-        get_data_collection(label=params.collection[0], config=config)
-        if params.collection is not None and len(params.collection) > 0
-        else get_default_collection(config=config)
+    logger.info(
+        "SIAv2 query started with params:", params=params, method="GET"
     )
 
-    # Create the query engine
-    query_engine = query_engine_factory.create_query_engine(
-        token=delegated_token, label=collection.label, config=collection.config
+    return process_query(
+        params=params,
+        query_engine_factory=query_engine_factory,
+        param_factory=param_factory,
+        delegated_token=delegated_token,
     )
 
-    # Get the query params in the right format
-    query_params = param_factory.create_params(
-        siav2_params=params
-    ).to_engine_parameters()
 
-    # Execute the query
-    table_as_votable = query_engine.siav2_query(query_params)
-
-    # Convert the result to a string
-    result = VOTableConverter(table_as_votable).to_string()
-
-    # For the moment only VOTable is supported, so we can hardcode the
-    # media_type and the file extension.
-    return Response(
-        headers={
-            "content-disposition": f"attachment; filename={RESULT_NAME}.xml",
-            "Content-Type": "application/x-votable+xml",
+@handle_exceptions
+@external_router.post(
+    "/query",
+    description="Query endpoint for the SIAv2 service (POST method).",
+    responses={
+        200: {"content": {"application/xml": {}}},
+        400: {
+            "description": "Invalid query parameters",
+            "model": ErrorModel,
         },
-        content=result,
-        media_type="application/x-votable+xml",
+    },
+    summary="IVOA SIAv2 service query (POST)",
+)
+async def query_post(
+    *,
+    query_engine_factory: Annotated[
+        QueryEngineFactory, Depends(get_query_engine_factory)
+    ],
+    params: Annotated[SIAv2QueryParams, Depends(siav2_post_params_dependency)],
+    param_factory: Annotated[ParamFactory, Depends(get_param_factory)],
+    logger: Annotated[BoundLogger, Depends(logger_dependency)],
+    delegated_token: Annotated[
+        str | None, Depends(optional_auth_delegated_token_dependency)
+    ],
+) -> Response:
+    """Endpoint used to query the SIAv2 service using various
+    parameters defined in the SIAv2 spec via a POST request.
+    The response is an XML VOTable file that adheres the Obscore model.
+
+    Parameters
+    ----------
+    param_factory
+        The Param factory dependency.
+    query_engine_factory
+        The Query Engine factory dependency.
+    delegated_token
+        The delegated token. (Optional)
+    params
+        The parameters for the SIAv2 query.
+    logger
+        The logger instance.
+
+    Returns
+    -------
+    Response
+        The response containing the query results.
+
+    Examples
+    --------
+    ### POST /api/siav2/query
+    ```
+    POST /api/images/query
+    Content-Type: application/json
+
+    {
+        "POS": "CIRCLE 321 0 1",
+        "BAND": "700e-9",
+        "FORMAT": "votable"
+    }
+    ```
+
+    See Also
+    --------
+    SIAv2 Specification: http://www.ivoa.net/documents/SIA/
+    ObsCore Data Model: http://www.ivoa.net/documents/ObsCore/
+    """
+    logger.info(
+        "SIAv2 query started with params:", params=params, method="POST"
+    )
+    return await run_in_threadpool(
+        process_query,
+        params=params,
+        query_engine_factory=query_engine_factory,
+        param_factory=param_factory,
+        delegated_token=delegated_token,
     )

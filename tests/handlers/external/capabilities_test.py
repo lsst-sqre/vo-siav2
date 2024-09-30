@@ -25,10 +25,8 @@ async def test_capabilities(client: AsyncClient) -> None:
     templates_dir = Jinja2Templates(template_dir)
 
     context = {
-        "capabilities_url": f"https://example.com"
-        f"{config.path_prefix}/capabilities",
-        "availability_url": f"https://example.com"
-        f"{config.path_prefix}/availability",
+        "capabilities_url": f"https://example.com{config.path_prefix}/capabilities",
+        "availability_url": f"https://example.com{config.path_prefix}/availability",
         "query_url": f"https://example.com{config.path_prefix}/query",
     }
 

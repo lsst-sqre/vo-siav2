@@ -3,10 +3,11 @@
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
 from enum import Enum
-from typing import Annotated, Any
+from typing import Annotated, Any, TypeVar
 
 from fastapi import Query
 
+from ..exceptions import UsageFaultError
 from ..models.common import CaseInsensitiveEnum
 
 __all__ = [
@@ -17,6 +18,8 @@ __all__ = [
     "Polarization",
     "CalibLevel",
 ]
+
+T = TypeVar("T", bound=Enum)
 
 
 class CalibLevel(int, Enum):
@@ -71,7 +74,7 @@ class BaseQueryParams(ABC):
 
 
 @dataclass
-class SIAv2QueryParams:
+class SIAv2QueryParams(BaseQueryParams):
     """A class to represent the parameters for an SIAv2 query.
 
     Attributes
@@ -283,8 +286,102 @@ class SIAv2QueryParams:
         ),
     ] = None
 
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "SIAv2QueryParams":
+        """Create an instance of SIAv2QueryParams from a dictionary.
+
+        This method handles renaming 'id' to 'q_id' and 'format' to 'q_format'.
+
+        Parameters
+        ----------
+        data
+            The dictionary containing the query parameters.
+
+        Returns
+        -------
+        SIAv2QueryParams
+            Instance of SIAv2QueryParams initialized with the provided data.
+        """
+        if "id" in data:
+            data["q_id"] = data.pop("id")
+
+        if "format" in data:
+            data["q_format"] = data.pop("format")
+
+        return cls(**data)
+
+    @classmethod
+    def validate_enum_list(
+        cls,
+        value: str | int | T | list[str | int | T] | list[T] | None,
+        enum_class: type[T],
+        field_name: str,
+    ) -> list[T] | None:
+        """Validate a list of enum values.
+
+        Parameters
+        ----------
+        value
+            The value to validate.
+        enum_class
+            The enumeration class.
+        field_name
+            The field name
+
+        Returns
+        -------
+        list
+            The validated list of enum values.
+
+        Raises
+        ------
+        ValueError
+            If the value is not a list.
+        """
+        if value is None:
+            return None
+        if not isinstance(value, list):
+            value = [value]
+
+        try:
+            return [
+                enum_class(item) if isinstance(item, str | int) else item
+                for item in value
+            ]
+        except ValueError as exc:
+            raise UsageFaultError(
+                detail=f"Validation of '{field_name}' failed"
+            ) from exc
+
+    def __post_init__(self) -> None:
+        """Validate the query parameters."""
+        self.pol = self.validate_enum_list(
+            value=self.pol, enum_class=Polarization, field_name="pol"
+        )
+        self.dptype = self.validate_enum_list(
+            value=self.dptype, enum_class=DPType, field_name="dptype"
+        )
+        self.calib = self.validate_enum_list(
+            value=self.calib, enum_class=CalibLevel, field_name="calib"
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Return the query parameters as a dictionary.
+
+        Returns
+        -------
+        dict
+            The query parameters as a dictionary.
+        """
+        return {k: v for k, v in asdict(self).items() if v is not None}
+
     def to_engine_parameters(self) -> dict[str, Any]:
         """Convert the query parameters to a dictionary. Exclude None
         values.
+
+        Returns
+        -------
+        dict
+            The query parameters as a dictionary.
         """
-        return {k: v for k, v in asdict(self).items() if v is not None}
+        return self.to_dict()

@@ -11,6 +11,7 @@
 fastapi
 starlette
 uvicorn[standard]
+python-multipart
 
 # Other dependencies.
 requests
