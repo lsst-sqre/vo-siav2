@@ -8,7 +8,7 @@ from typing import Any, TypeVar
 
 import structlog
 
-logger = structlog.get_logger("vosiav2")
+logger = structlog.get_logger("sia")
 
 
 def format_timedelta(td: timedelta) -> str:

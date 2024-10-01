@@ -4,13 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from vosiav2.models.common import CaseInsensitiveEnum
-from vosiav2.models.siav2_query_params import (
+from sia.models.common import CaseInsensitiveEnum
+from sia.models.sia_query_params import (
     CalibLevel,
     DPType,
     Polarization,
     Shape,
-    SIAv2QueryParams,
+    SIAQueryParams,
 )
 
 
@@ -64,9 +64,9 @@ async def test_polarization_enum() -> None:
 
 
 @pytest.mark.asyncio
-async def test_siav2params_initialization() -> None:
+async def test_sia_params_initialization() -> None:
     """Test the initialization of SIAv2QueryParams."""
-    params = SIAv2QueryParams(
+    params = SIAQueryParams(
         pos=["CIRCLE 0 1 1"],
         q_format=["application/fits"],
         time=["55 55"],
@@ -110,9 +110,9 @@ async def test_siav2params_initialization() -> None:
 
 
 @pytest.mark.asyncio
-async def test_siav2params_default_values() -> None:
+async def test_sia_params_default_values() -> None:
     """Test the default values of SIAv2QueryParams."""
-    params = SIAv2QueryParams()
+    params = SIAQueryParams()
 
     assert params.pos is None
     assert params.q_format is None
@@ -136,8 +136,8 @@ async def test_siav2params_default_values() -> None:
 
 
 @pytest.fixture
-def sample_siav2params() -> SIAv2QueryParams:
-    return SIAv2QueryParams(
+def sample_sia_params() -> SIAQueryParams:
+    return SIAQueryParams(
         pos=["CIRCLE 0 1 1 1"],
         q_format=["application/fits"],
         time=["55"],

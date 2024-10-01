@@ -1,4 +1,4 @@
-"""A Butler Query Engine service, used  for performing a SIAv2 query via the
+"""A Butler Query Engine service, used  for performing an SIA query via the
 use of Butler.
 """
 
@@ -10,7 +10,7 @@ from lsst.dax.obscore import ExporterConfig
 from lsst.dax.obscore.siav2 import SIAv2Parameters
 from lsst.dax.obscore.siav2 import siav2_query as butler_siav2_query
 
-from ..services.base_query_engine import SIAv2BaseQueryEngine
+from ..services.base_query_engine import SIABaseQueryEngine
 
 __all__ = [
     "BaseButlerQueryEngine",
@@ -20,13 +20,13 @@ __all__ = [
 
 
 @dataclass
-class BaseButlerQueryEngine(SIAv2BaseQueryEngine):
+class BaseButlerQueryEngine(SIABaseQueryEngine):
     """A service for performing a SIAv2 query via the use of Butler."""
 
     butler: Butler
     config: ExporterConfig
 
-    def siav2_query(
+    def sia_query(
         self, params: SIAv2Parameters
     ) -> astropy.io.votable.tree.VOTableFile:
         """Perform a SIAv2 query.

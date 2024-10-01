@@ -1,4 +1,4 @@
-"""Tests for the vosiav2.handlers.external module and routes."""
+"""Tests for the sia.handlers.external module and routes."""
 
 from __future__ import annotations
 
@@ -7,11 +7,11 @@ from typing import Any
 import pytest
 from httpx import AsyncClient
 
+from sia.config import config
+from sia.constants import RESULT_NAME
 from tests.support.butler import MockButlerEngine
 from tests.support.constants import EXCEPTION_MESSAGES
 from tests.support.validators import validate_votable_error
-from vosiav2.config import config
-from vosiav2.constants import RESULT_NAME
 
 
 @pytest.mark.asyncio
@@ -92,7 +92,7 @@ async def test_query_endpoint_mocker_get(
     assert response.headers["content-disposition"].startswith(
         f"attachment; filename={RESULT_NAME}.xml",
     )
-    mock_query_engine.siav2_query.assert_called_once()
+    mock_query_engine.sia_query.assert_called_once()
 
 
 @pytest.mark.asyncio

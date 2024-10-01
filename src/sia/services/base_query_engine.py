@@ -10,12 +10,12 @@ P = TypeVar("P")
 
 
 @dataclass
-class SIAv2BaseQueryEngine(ABC, Generic[P]):
-    """Abstract class for query engines used to run an SIAv2 query."""
+class SIABaseQueryEngine(ABC, Generic[P]):
+    """Abstract class for query engines used to run an SIA query."""
 
     @abstractmethod
-    def siav2_query(self, params: P) -> astropy.io.votable.tree.VOTableFile:
-        """Perform a SIAv2 query.
+    def sia_query(self, params: P) -> astropy.io.votable.tree.VOTableFile:
+        """Perform an SIA query.
 
         Parameters
         ----------

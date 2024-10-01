@@ -17,7 +17,7 @@ _TEMPLATES = Jinja2Templates(
     directory=str(Path(__file__).resolve().parent / "templates")
 )
 
-logger = structlog.get_logger("vosiav2")
+logger = structlog.get_logger("sia")
 
 # Module may be slightly too long, in the future we may want to break it up
 

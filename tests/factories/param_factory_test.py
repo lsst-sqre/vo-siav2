@@ -5,21 +5,21 @@ from typing import Any
 import pytest
 from lsst.dax.obscore.siav2 import SIAv2Parameters
 
-from vosiav2.config import Config
-from vosiav2.factories.param_factory import ParamFactory
-from vosiav2.models.query_engines import QueryEngines
-from vosiav2.models.siav2_query_params import (
+from sia.config import Config
+from sia.factories.param_factory import ParamFactory
+from sia.models.query_engines import QueryEngines
+from sia.models.sia_query_params import (
     CalibLevel,
     DPType,
     Polarization,
-    SIAv2QueryParams,
+    SIAQueryParams,
 )
 
 
 @pytest.fixture
-def siav2_params() -> SIAv2QueryParams:
-    """Return a SIAv2QueryParams instance."""
-    return SIAv2QueryParams(
+def sia_params() -> SIAQueryParams:
+    """Return a SIAQueryParams instance."""
+    return SIAQueryParams(
         pos=["CIRCLE 0 1 1"],
         q_format=["application/fits"],
         time=["55 55"],
@@ -50,11 +50,11 @@ def siav2_params() -> SIAv2QueryParams:
     ],
 )
 def test_param_factory(
-    engine: QueryEngines, expected_type: Any, siav2_params: SIAv2QueryParams
+    engine: QueryEngines, expected_type: Any, sia_params: SIAQueryParams
 ) -> None:
     """Test the ParamFactory class."""
     config = Config(query_engine=engine)
     factory = ParamFactory(config)
-    adapter = factory.create_params(siav2_params)
+    adapter = factory.create_params(sia_params)
     engine_specific_params = adapter.to_engine_parameters()
     assert isinstance(engine_specific_params, expected_type)

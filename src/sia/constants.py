@@ -1,4 +1,4 @@
-"""Constants for the SIAv2 service."""
+"""Constants for the SIA service."""
 
 __all__ = [
     "RESPONSEFORMATS",
@@ -10,7 +10,7 @@ __all__ = [
 from .models.data_collections import DataCollection
 
 RESPONSEFORMATS = {"votable", "application/x-votable"}
-"""List of supported response formats for the SIAv2 service."""
+"""List of supported response formats for the SIA service."""
 
 RESULT_NAME = "result"
 """The name of the result file."""

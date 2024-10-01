@@ -11,9 +11,9 @@ from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
 
-from vosiav2.config import Config, config
-from vosiav2.models.query_engines import QueryEngines
-from vosiav2.services.availability import (
+from sia.config import Config, config
+from sia.models.query_engines import QueryEngines
+from sia.services.availability import (
     AvailabilityService,
     DirectButlerAvailabilityChecker,
     RemoteButlerAvailabilityChecker,
@@ -50,7 +50,7 @@ async def test_remote_butler_availability_success(
 ) -> None:
     """Test the availability of the remote Butler query engine."""
     checker = RemoteButlerAvailabilityChecker()
-    with patch("vosiav2.services.availability.AsyncClient") as mock_client:
+    with patch("sia.services.availability.AsyncClient") as mock_client:
         mock_response = AsyncMock()
         mock_response.status_code = 200
         mock_client.return_value.__aenter__.return_value.get.return_value = (
@@ -68,7 +68,7 @@ async def test_remote_butler_availability_failure(
     it is not available.
     """
     checker = RemoteButlerAvailabilityChecker()
-    with patch("vosiav2.services.availability.AsyncClient") as mock_client:
+    with patch("sia.services.availability.AsyncClient") as mock_client:
         mock_response = AsyncMock()
         mock_response.status_code = 404
         mock_client.return_value.__aenter__.return_value.get.return_value = (

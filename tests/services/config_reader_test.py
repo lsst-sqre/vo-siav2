@@ -4,12 +4,12 @@ from unittest.mock import Mock
 
 import pytest
 
-from vosiav2.config import Config
-from vosiav2.exceptions import FatalFaultError, UsageFaultError
-from vosiav2.factories.query_engine_factory import QueryEngineFactory
-from vosiav2.models.data_collections import DataCollection
-from vosiav2.models.query_engines import QueryEngines
-from vosiav2.services.config_reader import (
+from sia.config import Config
+from sia.exceptions import FatalFaultError, UsageFaultError
+from sia.factories.query_engine_factory import QueryEngineFactory
+from sia.models.data_collections import DataCollection
+from sia.models.query_engines import QueryEngines
+from sia.services.config_reader import (
     get_data_collection,
     get_data_repositories,
 )
@@ -60,7 +60,7 @@ def mock_remote_butler_query_engine(monkeypatch: pytest.MonkeyPatch) -> Mock:
     """Return a mock RemoteButlerQueryEngine instance."""
     mock = Mock()
     monkeypatch.setattr(
-        "vosiav2.factories.query_engine_factory.RemoteButlerQueryEngine", mock
+        "sia.factories.query_engine_factory.RemoteButlerQueryEngine", mock
     )
     return mock
 

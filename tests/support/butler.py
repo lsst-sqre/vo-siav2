@@ -7,8 +7,8 @@ import astropy
 
 class MockButlerEngine:
     def __init__(self) -> None:
-        self.siav2_query = Mock()
-        self.siav2_query.return_value = self.create_obscore_votable()
+        self.sia_query = Mock()
+        self.sia_query.return_value = self.create_obscore_votable()
 
     @staticmethod
     def create_obscore_votable() -> astropy.io.votable.tree.VOTableFile:

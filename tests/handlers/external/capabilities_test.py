@@ -10,7 +10,7 @@ from fastapi import APIRouter
 from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
 
-from vosiav2.config import config
+from sia.config import config
 
 router = APIRouter()
 """FastAPI router for all external handlers."""

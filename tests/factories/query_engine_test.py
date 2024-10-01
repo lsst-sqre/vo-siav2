@@ -4,11 +4,11 @@ from unittest.mock import Mock
 
 import pytest
 
-from vosiav2.config import Config
-from vosiav2.exceptions import FatalFaultError
-from vosiav2.factories.query_engine_factory import QueryEngineFactory
-from vosiav2.models.query_engines import QueryEngines
-from vosiav2.services.butler_query_engine import RemoteButlerQueryEngine
+from sia.config import Config
+from sia.exceptions import FatalFaultError
+from sia.factories.query_engine_factory import QueryEngineFactory
+from sia.models.query_engines import QueryEngines
+from sia.services.butler_query_engine import RemoteButlerQueryEngine
 
 
 @pytest.fixture
@@ -28,7 +28,7 @@ def mock_labeled_butler_factory(monkeypatch: pytest.MonkeyPatch) -> Mock:
     """Return a mock LabeledButlerFactory instance."""
     mock = Mock()
     monkeypatch.setattr(
-        "vosiav2.factories.query_engine_factory.LabeledButlerFactory", mock
+        "sia.factories.query_engine_factory.LabeledButlerFactory", mock
     )
     return mock
 
@@ -38,7 +38,7 @@ def mock_butler_config(monkeypatch: pytest.MonkeyPatch) -> Mock:
     """Return a mock ButlerConfig instance."""
     mock = Mock()
     monkeypatch.setattr(
-        "vosiav2.factories.query_engine_factory.ButlerConfig", mock
+        "sia.factories.query_engine_factory.ButlerConfig", mock
     )
     return mock
 
@@ -48,7 +48,7 @@ def mock_exporter_config(monkeypatch: pytest.MonkeyPatch) -> Mock:
     """Return a mock ExporterConfig instance."""
     mock = Mock()
     monkeypatch.setattr(
-        "vosiav2.factories.query_engine_factory.ExporterConfig", mock
+        "sia.factories.query_engine_factory.ExporterConfig", mock
     )
     return mock
 

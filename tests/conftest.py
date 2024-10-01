@@ -1,4 +1,4 @@
-"""Test fixtures for vo-siav2 tests."""
+"""Test fixtures for sia tests."""
 
 from __future__ import annotations
 
@@ -13,11 +13,11 @@ from asgi_lifespan import LifespanManager
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
-from vosiav2 import main
-from vosiav2.config import Config
-from vosiav2.factories.query_engine_factory import QueryEngineFactory
-from vosiav2.models.data_collections import DataCollection
-from vosiav2.models.query_engines import QueryEngines
+from sia import main
+from sia.config import Config
+from sia.factories.query_engine_factory import QueryEngineFactory
+from sia.models.data_collections import DataCollection
+from sia.models.query_engines import QueryEngines
 
 from .support.butler import MockButlerEngine
 
@@ -57,7 +57,7 @@ async def expected_votable() -> str:
 def mock_query_engine(monkeypatch: pytest.MonkeyPatch) -> MockButlerEngine:
     """Return a mock ButlerQueryEngine object."""
     mock_engine = MockButlerEngine()
-    mock_engine.siav2_query = MagicMock(
+    mock_engine.sia_query = MagicMock(
         return_value=MockButlerEngine.create_obscore_votable()
     )
 

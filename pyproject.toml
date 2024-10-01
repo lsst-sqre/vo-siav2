@@ -1,7 +1,7 @@
 [project]
 # https://packaging.python.org/en/latest/specifications/declaring-project-metadata/
-name = "vo-siav2"
-description = "Rubin Observatory SIAv2 implementation over Butler"
+name = "sia"
+description = "Rubin Observatory SIA implementation over Butler"
 license = { file = "LICENSE" }
 readme = "README.md"
 keywords = ["rubin", "lsst"]
@@ -23,11 +23,11 @@ dependencies = []
 dynamic = ["version"]
 
 [project.scripts]
-vo-siav2 = "vosiav2.cli:main"
+sia = "sia.cli:main"
 
 [project.urls]
-Homepage = "https://vo-siav2.lsst.io"
-Source = "https://github.com/lsst-sqre/vo-siav2"
+Homepage = "https://sia.lsst.io"
+Source = "https://github.com/lsst-sqre/sia"
 
 [build-system]
 requires = ["setuptools>=61", "wheel", "setuptools_scm[toml]>=6.2"]
@@ -36,12 +36,12 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools_scm]
 
 [tool.setuptools.package-data]
-"vosiav2" = ["templates/*.xml"]
+"sia" = ["templates/*.xml"]
 
 [tool.coverage.run]
 parallel = true
 branch = true
-source = ["vosiav2"]
+source = ["sia"]
 
 [tool.coverage.paths]
 source = ["src", ".tox/*/site-packages"]
@@ -99,7 +99,7 @@ asyncio_default_fixture_loop_scope = "function"
 extend = "ruff-shared.toml"
 
 [tool.ruff.lint.isort]
-known-first-party = ["vosiav2", "tests"]
+known-first-party = ["sia", "tests"]
 split-on-trailing-comma = false
 
 [tool.scriv]

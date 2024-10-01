@@ -6,11 +6,11 @@ from pathlib import Path
 
 from defusedxml import ElementTree as DefusedET
 
-from vosiav2.config import Config
-from vosiav2.factories.param_factory import ParamFactory
-from vosiav2.factories.query_engine_factory import QueryEngineFactory
-from vosiav2.models import SIAv2QueryParams
-from vosiav2.services.votable import VOTableConverter
+from sia.config import Config
+from sia.factories.param_factory import ParamFactory
+from sia.factories.query_engine_factory import QueryEngineFactory
+from sia.models.sia_query_params import SIAQueryParams
+from sia.services.votable import VOTableConverter
 
 _BUTLER_REPO_PATH = str(Path(__file__).parent.parent / "data" / "repo")
 _BUTLER_CONFIG_PATH = str(Path(__file__).parent.parent / "data" / "config")
@@ -21,7 +21,7 @@ def valid_votable(xml_string: str) -> bool:
 
     Parameters
     ----------
-    xml_string : str
+    xml_string
         The VOTable XML string to validate.
 
     Returns
@@ -72,7 +72,7 @@ def valid_votable(xml_string: str) -> bool:
 
 def test_local_direct_butler(test_config_direct: Config) -> None:
     """Test Direct butler engine using HSC Gen3 data."""
-    query_params = SIAv2QueryParams(
+    query_params = SIAQueryParams(
         pos=["CIRCLE 320 -0.1 10"],
         time=["-Inf Inf"],
     )
@@ -85,10 +85,10 @@ def test_local_direct_butler(test_config_direct: Config) -> None:
 
     query_params = (
         ParamFactory(config=test_config_direct)
-        .create_params(siav2_params=query_params)
+        .create_params(sia_params=query_params)
         .to_engine_parameters()
     )
 
-    table_as_votable = query_engine.siav2_query(query_params)
+    table_as_votable = query_engine.sia_query(query_params)
     result = VOTableConverter(table_as_votable).to_string()
     assert valid_votable(result)

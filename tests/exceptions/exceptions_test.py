@@ -3,7 +3,7 @@
 import pytest
 from fastapi import FastAPI
 
-from vosiav2.exceptions import (
+from sia.exceptions import (
     DefaultFaultError,
     FatalFaultError,
     TransientFaultError,

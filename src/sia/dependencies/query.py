@@ -10,7 +10,7 @@ from ..config import config
 from ..constants import SINGLE_PARAMS
 from ..factories.param_factory import ParamFactory
 from ..factories.query_engine_factory import QueryEngineFactory
-from ..models import SIAv2QueryParams
+from ..models.sia_query_params import SIAQueryParams
 
 
 def get_query_engine_factory() -> QueryEngineFactory:
@@ -23,10 +23,10 @@ def get_param_factory() -> ParamFactory:
     return ParamFactory(config)
 
 
-async def siav2_post_params_dependency(
+async def sia_post_params_dependency(
     request: Request,
-) -> SIAv2QueryParams:
-    """Dependency to parse the POST parameters for the SIAv2 query.
+) -> SIAQueryParams:
+    """Dependency to parse the POST parameters for the SIA query.
 
     Parameters
     ----------
@@ -35,8 +35,8 @@ async def siav2_post_params_dependency(
 
     Returns
     -------
-    SIAv2QueryParams
-        The parameters for the SIAv2 query.
+    SIAQueryParams
+        The parameters for the SIA query.
 
     Raises
     ------
@@ -44,14 +44,12 @@ async def siav2_post_params_dependency(
         If the method is not POST.
     """
     if request.method != "POST":
-        raise ValueError(
-            "siav2_post_params_dependency used for non-POST route"
-        )
+        raise ValueError("sia_post_params_dependency used for non-POST route")
     content_type = request.headers.get("Content-Type", "")
     params_dict: dict[str, list[str]] = defaultdict(list)
 
     # Handle JSON Content-Type
-    # This isn't required by the SIAv2 spec, but it may be useful for
+    # This isn't required by the SIA spec, but it may be useful for
     # deugging, for future expansion the spec and for demonstration purposes.
     if "application/json" in content_type:
         json_data = await request.json()
@@ -77,4 +75,4 @@ async def siav2_post_params_dependency(
         else:
             converted_params_dict[key] = value
 
-    return SIAv2QueryParams.from_dict(converted_params_dict)
+    return SIAQueryParams.from_dict(converted_params_dict)

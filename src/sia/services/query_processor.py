@@ -7,7 +7,7 @@ from ..constants import RESULT_NAME
 from ..exceptions import UsageFaultError
 from ..factories.param_factory import ParamFactory
 from ..factories.query_engine_factory import QueryEngineFactory
-from ..models import SIAv2QueryParams
+from ..models.sia_query_params import SIAQueryParams
 from ..services.config_reader import (
     get_data_collection,
     get_default_collection,
@@ -16,7 +16,7 @@ from ..services.votable import VOTableConverter
 
 
 def process_query(
-    params: SIAv2QueryParams,
+    params: SIAQueryParams,
     query_engine_factory: QueryEngineFactory,
     param_factory: ParamFactory,
     delegated_token: str | None,
@@ -58,13 +58,13 @@ def process_query(
     try:
         # Get the query params in the right format
         query_params = param_factory.create_params(
-            siav2_params=params
+            sia_params=params
         ).to_engine_parameters()
     except ValueError as exc:
         raise UsageFaultError(detail=str(exc)) from exc
 
     # Execute the query
-    table_as_votable = query_engine.siav2_query(query_params)
+    table_as_votable = query_engine.sia_query(query_params)
 
     # Convert the result to a string
     result = VOTableConverter(table_as_votable).to_string()

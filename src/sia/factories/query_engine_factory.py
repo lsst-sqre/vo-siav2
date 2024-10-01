@@ -1,4 +1,4 @@
-"""FastAPI dependencies for the SIAV2 service."""
+"""FastAPI dependencies for the SIA service."""
 
 from collections.abc import Callable
 from typing import Any
@@ -11,7 +11,7 @@ from lsst.dax.obscore import ExporterConfig
 from ..config import Config
 from ..exceptions import FatalFaultError
 from ..models.query_engines import QueryEngines
-from ..services.base_query_engine import SIAv2BaseQueryEngine
+from ..services.base_query_engine import SIABaseQueryEngine
 from ..services.butler_query_engine import (
     DirectButlerQueryEngine,
     RemoteButlerQueryEngine,
@@ -39,15 +39,15 @@ class QueryEngineFactory:
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self.logger = structlog.get_logger("vosiav2")
+        self.logger = structlog.get_logger("sia")
         self.engine_creators: dict[
-            QueryEngines, Callable[..., SIAv2BaseQueryEngine]
+            QueryEngines, Callable[..., SIABaseQueryEngine]
         ] = {
             QueryEngines.DIRECT_BUTLER: self._create_direct_butler,
             QueryEngines.REMOTE_BUTLER: self._create_remote_butler,
         }
 
-    def create_query_engine(self, **kwargs: Any) -> SIAv2BaseQueryEngine:
+    def create_query_engine(self, **kwargs: Any) -> SIABaseQueryEngine:
         """Create a query engine instance.
 
         Parameters
@@ -57,7 +57,7 @@ class QueryEngineFactory:
 
         Returns
         -------
-        SIAv2BaseQueryEngine
+        SIABaseQueryEngine
             The query engine instance.
 
         Raises

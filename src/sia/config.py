@@ -16,12 +16,12 @@ __all__ = ["Config", "config"]
 
 
 class Config(BaseSettings):
-    """Configuration for vo-siav2."""
+    """Configuration for sia."""
 
-    name: str = Field("vo-siav2", title="Name of application")
+    name: str = Field("sia", title="Name of application")
     """Name of application."""
 
-    path_prefix: str = Field("/api/images", title="URL prefix for application")
+    path_prefix: str = Field("/api/sia", title="URL prefix for application")
     """URL prefix for application."""
 
     profile: Profile = Field(
@@ -34,9 +34,7 @@ class Config(BaseSettings):
     )
     """Log level of the application's logger."""
 
-    model_config = SettingsConfigDict(
-        env_prefix="SIAV2_", case_sensitive=False
-    )
+    model_config = SettingsConfigDict(env_prefix="SIA_", case_sensitive=False)
     """Configuration for the model settings."""
 
     query_engine: QueryEngines = QueryEngines.REMOTE_BUTLER
@@ -55,4 +53,4 @@ class Config(BaseSettings):
 
 
 config = Config()
-"""Configuration instance for vo-siav2."""
+"""Configuration instance for sia."""

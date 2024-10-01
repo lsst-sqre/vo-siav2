@@ -1,4 +1,4 @@
-"""SIAv2 query parameters models."""
+"""SIA query parameters models."""
 
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass
@@ -12,7 +12,7 @@ from ..models.common import CaseInsensitiveEnum
 
 __all__ = [
     "BaseQueryParams",
-    "SIAv2QueryParams",
+    "SIAQueryParams",
     "Shape",
     "DPType",
     "Polarization",
@@ -74,8 +74,8 @@ class BaseQueryParams(ABC):
 
 
 @dataclass
-class SIAv2QueryParams(BaseQueryParams):
-    """A class to represent the parameters for an SIAv2 query.
+class SIAQueryParams(BaseQueryParams):
+    """A class to represent the parameters for an SIA query.
 
     Attributes
     ----------
@@ -287,8 +287,8 @@ class SIAv2QueryParams(BaseQueryParams):
     ] = None
 
     @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "SIAv2QueryParams":
-        """Create an instance of SIAv2QueryParams from a dictionary.
+    def from_dict(cls, data: dict[str, Any]) -> "SIAQueryParams":
+        """Create an instance of SIAQueryParams from a dictionary.
 
         This method handles renaming 'id' to 'q_id' and 'format' to 'q_format'.
 
@@ -299,8 +299,8 @@ class SIAv2QueryParams(BaseQueryParams):
 
         Returns
         -------
-        SIAv2QueryParams
-            Instance of SIAv2QueryParams initialized with the provided data.
+        SIAQueryParams
+            Instance of SIAQueryParams initialized with the provided data.
         """
         if "id" in data:
             data["q_id"] = data.pop("id")

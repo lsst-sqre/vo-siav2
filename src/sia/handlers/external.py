@@ -1,4 +1,4 @@
-"""Handlers for the app's external root, ``/api/siav2/``."""
+"""Handlers for the app's external root, ``/api/sia/``."""
 
 from pathlib import Path
 from typing import Annotated
@@ -18,13 +18,14 @@ from ..dependencies.availability import get_availability_dependency
 from ..dependencies.query import (
     get_param_factory,
     get_query_engine_factory,
-    siav2_post_params_dependency,
+    sia_post_params_dependency,
 )
 from ..dependencies.token import optional_auth_delegated_token_dependency
 from ..exceptions import handle_exceptions
 from ..factories.param_factory import ParamFactory
 from ..factories.query_engine_factory import QueryEngineFactory
-from ..models import Index, SIAv2QueryParams
+from ..models.index import Index
+from ..models.sia_query_params import SIAQueryParams
 from ..services.query_processor import process_query
 from ..services.timer import timer
 
@@ -50,12 +51,12 @@ external_router = APIRouter()
 async def get_index(
     logger: Annotated[BoundLogger, Depends(logger_dependency)],
 ) -> Index:
-    """GET ``/api/siav2/`` (the app's external root).
+    """GET ``/api/sia/`` (the app's external root).
 
     Customize this handler to return whatever the top-level resource of your
     application should return. For example, consider listing key API URLs.
     When doing so, also change or customize the response model in
-    `vosiav2.models.Index`.
+    `sia.models.Index`.
 
     By convention, the root of the external API includes a field called
     ``metadata`` that provides the same Safir-generated metadata as the
@@ -67,7 +68,7 @@ async def get_index(
     logger.info("Request for application metadata")
 
     metadata = get_metadata(
-        package_name="vo-siav2",
+        package_name="sia",
         application_name=config.name,
     )
     return Index(metadata=metadata)
@@ -103,7 +104,7 @@ async def get_availability(
     Response
         The response containing the VOSI-availability XML document.
 
-    ## GET /api/siav2/availability
+    ## GET /api/sia/availability
 
     **Example XML Response**:
     ```xml
@@ -120,7 +121,7 @@ async def get_availability(
 
 @external_router.get(
     "/capabilities",
-    description="VOSI-capabilities resource for the SIAv2 service.",
+    description="VOSI-capabilities resource for the SIA service.",
     responses={200: {"content": {"application/xml": {}}}},
     summary="IVOA service capabilities",
 )
@@ -129,7 +130,7 @@ async def get_capabilities(
     logger: Annotated[BoundLogger, Depends(logger_dependency)],
 ) -> Response:
     """Endpoint which provides the VOSI-capabilities resource, which lists the
-    capabilities of the SIAv2 service, as an XML document (VOSI-capabilities).
+    capabilities of the SIA service, as an XML document (VOSI-capabilities).
 
     Parameters
     ----------
@@ -143,7 +144,7 @@ async def get_capabilities(
     Response
         The response containing the VOSI-capabilities XML document.
 
-    ## GET /api/siav2/capabilities
+    ## GET /api/sia/capabilities
 
     **Example XML Response**:
     ```xml
@@ -177,7 +178,7 @@ async def get_capabilities(
 
 @external_router.get(
     "/query",
-    description="Query endpoint for the SIAv2 service.",
+    description="Query endpoint for the SIA service.",
     responses={
         200: {"content": {"application/xml": {}}},
         400: {
@@ -185,7 +186,7 @@ async def get_capabilities(
             "model": ErrorModel,
         },
     },
-    summary="IVOA SIAv2 service query",
+    summary="IVOA SIA service query",
 )
 @timer
 @handle_exceptions
@@ -194,14 +195,14 @@ def query_get(
         QueryEngineFactory, Depends(get_query_engine_factory)
     ],
     param_factory: Annotated[ParamFactory, Depends(get_param_factory)],
-    params: Annotated[SIAv2QueryParams, Depends()],
+    params: Annotated[SIAQueryParams, Depends()],
     logger: Annotated[BoundLogger, Depends(logger_dependency)],
     delegated_token: Annotated[
         str | None, Depends(optional_auth_delegated_token_dependency)
     ],
 ) -> Response:
-    """Endpoint used to query the SIAv2 service using various
-    parameters defined in the SIAv2 spec via a GET request.
+    """Endpoint used to query the SIA service using various
+    parameters defined in the SIA spec via a GET request.
     The response is an XML VOTable file that adheres the Obscore model.
 
     Parameters
@@ -213,7 +214,7 @@ def query_get(
     delegated_token
         The delegated token. (Optional)
     params
-        The parameters for the SIAv2 query.
+        The parameters for the SIA query.
     logger
         The logger instance.
 
@@ -224,19 +225,17 @@ def query_get(
 
     Examples
     --------
-    ### GET /api/siav2/query
+    ### GET /api/sia/query
     ```
-    /api/images/query?POS=CIRCLE+321+0+1&BAND=700e-9&FORMAT=votable
+    /api/sia/query?POS=CIRCLE+321+0+1&BAND=700e-9&FORMAT=votable
     ```
 
     See Also
     --------
-    SIAv2 Specification: http://www.ivoa.net/documents/SIA/
+    SIA Specification: http://www.ivoa.net/documents/SIA/
     ObsCore Data Model: http://www.ivoa.net/documents/ObsCore/
     """
-    logger.info(
-        "SIAv2 query started with params:", params=params, method="GET"
-    )
+    logger.info("SIA query started with params:", params=params, method="GET")
 
     return process_query(
         params=params,
@@ -249,7 +248,7 @@ def query_get(
 @handle_exceptions
 @external_router.post(
     "/query",
-    description="Query endpoint for the SIAv2 service (POST method).",
+    description="Query endpoint for the SIA service (POST method).",
     responses={
         200: {"content": {"application/xml": {}}},
         400: {
@@ -257,22 +256,22 @@ def query_get(
             "model": ErrorModel,
         },
     },
-    summary="IVOA SIAv2 service query (POST)",
+    summary="IVOA SIA (v2) service query (POST)",
 )
 async def query_post(
     *,
     query_engine_factory: Annotated[
         QueryEngineFactory, Depends(get_query_engine_factory)
     ],
-    params: Annotated[SIAv2QueryParams, Depends(siav2_post_params_dependency)],
+    params: Annotated[SIAQueryParams, Depends(sia_post_params_dependency)],
     param_factory: Annotated[ParamFactory, Depends(get_param_factory)],
     logger: Annotated[BoundLogger, Depends(logger_dependency)],
     delegated_token: Annotated[
         str | None, Depends(optional_auth_delegated_token_dependency)
     ],
 ) -> Response:
-    """Endpoint used to query the SIAv2 service using various
-    parameters defined in the SIAv2 spec via a POST request.
+    """Endpoint used to query the SIA service using various
+    parameters defined in the SIA spec via a POST request.
     The response is an XML VOTable file that adheres the Obscore model.
 
     Parameters
@@ -284,7 +283,7 @@ async def query_post(
     delegated_token
         The delegated token. (Optional)
     params
-        The parameters for the SIAv2 query.
+        The parameters for the SIA query.
     logger
         The logger instance.
 
@@ -295,9 +294,9 @@ async def query_post(
 
     Examples
     --------
-    ### POST /api/siav2/query
+    ### POST /api/sia/query
     ```
-    POST /api/images/query
+    POST /api/sia/query
     Content-Type: application/json
 
     {
@@ -309,12 +308,10 @@ async def query_post(
 
     See Also
     --------
-    SIAv2 Specification: http://www.ivoa.net/documents/SIA/
+    SIA Specification: http://www.ivoa.net/documents/SIA/
     ObsCore Data Model: http://www.ivoa.net/documents/ObsCore/
     """
-    logger.info(
-        "SIAv2 query started with params:", params=params, method="POST"
-    )
+    logger.info("SIA query started with params:", params=params, method="POST")
     return await run_in_threadpool(
         process_query,
         params=params,

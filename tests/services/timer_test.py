@@ -7,7 +7,7 @@ from unittest.mock import patch
 
 import pytest
 
-from vosiav2.services.timer import format_timedelta, timer
+from sia.services.timer import format_timedelta, timer
 
 
 def test_format_timedelta_microseconds() -> None:
