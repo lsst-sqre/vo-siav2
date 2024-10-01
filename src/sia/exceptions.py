@@ -13,11 +13,13 @@ from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.templating import Jinja2Templates
 
+from .config import config
+
 _TEMPLATES = Jinja2Templates(
     directory=str(Path(__file__).resolve().parent / "templates")
 )
 
-logger = structlog.get_logger("sia")
+logger = structlog.get_logger(config.name)
 
 # Module may be slightly too long, in the future we may want to break it up
 

@@ -8,7 +8,7 @@ from lsst.daf.butler import Butler, LabeledButlerFactory
 from lsst.daf.butler import Config as ButlerConfig
 from lsst.dax.obscore import ExporterConfig
 
-from ..config import Config
+from ..config import Config, config
 from ..exceptions import FatalFaultError
 from ..models.query_engines import QueryEngines
 from ..services.base_query_engine import SIABaseQueryEngine
@@ -19,6 +19,8 @@ from ..services.butler_query_engine import (
 from ..services.config_reader import data_repositories
 
 __all__ = ["QueryEngineFactory"]
+
+logger = structlog.get_logger(config.name)
 
 
 class QueryEngineFactory:
@@ -39,7 +41,7 @@ class QueryEngineFactory:
 
     def __init__(self, config: Config) -> None:
         self.config = config
-        self.logger = structlog.get_logger("sia")
+        self.logger = logger
         self.engine_creators: dict[
             QueryEngines, Callable[..., SIABaseQueryEngine]
         ] = {
