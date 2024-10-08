@@ -1,4 +1,4 @@
-"""Test fixtures for vo-siav2 tests."""
+"""Test fixtures for sia tests."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from asgi_lifespan import LifespanManager
 from fastapi import FastAPI
 from httpx import ASGITransport, AsyncClient
 
-from vosiav2 import main
+from sia import main
 
 
 @pytest_asyncio.fixture
