@@ -24,4 +24,4 @@ astropy
 vo-models
 defusedxml
 lsst-daf-butler[remote]
-lsst-dax-obscore @ git+https://github.com/lsst-dm/dax_obscore@main
+lsst-dax-obscore @ git+https://github.com/lsst-dm/dax_obscore@main#egg=lsst-dax-obscore
