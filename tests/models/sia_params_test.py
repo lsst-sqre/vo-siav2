@@ -68,7 +68,7 @@ async def test_sia_params_initialization() -> None:
     """Test the initialization of SIAv2QueryParams."""
     params = SIAQueryParams(
         pos=["CIRCLE 0 1 1"],
-        q_format=["application/fits"],
+        format=["application/fits"],
         time=["55 55"],
         band=["0.1 10.0"],
         pol=[Polarization("I"), Polarization("Q")],
@@ -77,7 +77,7 @@ async def test_sia_params_initialization() -> None:
         exptime=["-Inf 60"],
         timeres=["-Inf 1.0"],
         specrp=["1000 2000"],
-        q_id=["obs_id_1"],
+        id=["obs_id_1"],
         dptype=[DPType("image")],
         calib=[CalibLevel(0), CalibLevel(1), CalibLevel(2)],
         target=["M31"],
@@ -89,7 +89,7 @@ async def test_sia_params_initialization() -> None:
     )
 
     assert params.pos == ["CIRCLE 0 1 1"]
-    assert params.q_format == ["application/fits"]
+    assert params.format == ["application/fits"]
     assert params.time == ["55 55"]
     assert params.band == ["0.1 10.0"]
     assert params.pol == [Polarization("I"), Polarization("Q")]
@@ -98,7 +98,7 @@ async def test_sia_params_initialization() -> None:
     assert params.exptime == ["-Inf 60"]
     assert params.timeres == ["-Inf 1.0"]
     assert params.specrp == ["1000 2000"]
-    assert params.q_id == ["obs_id_1"]
+    assert params.id == ["obs_id_1"]
     assert params.dptype == [DPType("image")]
     assert params.calib == [0, 1, 2]
     assert params.target == ["M31"]
@@ -115,7 +115,7 @@ async def test_sia_params_default_values() -> None:
     params = SIAQueryParams()
 
     assert params.pos is None
-    assert params.q_format is None
+    assert params.format is None
     assert params.time is None
     assert params.band is None
     assert params.pol is None
@@ -124,14 +124,14 @@ async def test_sia_params_default_values() -> None:
     assert params.exptime is None
     assert params.timeres is None
     assert params.specrp is None
-    assert params.q_id is None
+    assert params.id is None
     assert params.dptype is None
     assert params.calib is None
     assert params.target is None
     assert params.collection is None
     assert params.facility is None
     assert params.instrument is None
-    assert params.maxrec is None
+    assert params.maxrec == 0
     assert params.responseformat is None
 
 
@@ -139,7 +139,7 @@ async def test_sia_params_default_values() -> None:
 def sample_sia_params() -> SIAQueryParams:
     return SIAQueryParams(
         pos=["CIRCLE 0 1 1 1"],
-        q_format=["application/fits"],
+        format=["application/fits"],
         time=["55"],
         band=["0.1 10.0"],
         pol=[Polarization("I"), Polarization("Q")],
@@ -148,7 +148,7 @@ def sample_sia_params() -> SIAQueryParams:
         exptime=["-Inf 60"],
         timeres=["-Inf 1.0"],
         specrp=["1000 2000"],
-        q_id=["obs_id_1"],
+        id=["obs_id_1"],
         dptype=[DPType("image")],
         calib=[CalibLevel(0), CalibLevel(1), CalibLevel(2)],
         target=["M31"],

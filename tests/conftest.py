@@ -9,7 +9,7 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 import pytest_asyncio
 from asgi_lifespan import LifespanManager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from httpx import ASGITransport, AsyncClient
 from pydantic import HttpUrl
 
@@ -35,19 +35,39 @@ async def app(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[FastAPI]:
     Wraps the application in a lifespan manager so that startup and shutdown
     events are sent during test execution.
     """
+
+    @main.app.post("/test-params")
+    async def test_params_endpoint(
+        request: Request,
+    ) -> dict:
+        """Test endpoint for the middleware.
+
+        Parameters
+        ----------
+        request
+            The incoming request
+
+        Returns
+        -------
+        dict[str, dict[str, str]]
+            The response data
+        """
+        form_data = await request.form()
+        return {"method": "POST", "form_data": dict(form_data)}
+
     data_config = BASE_PATH / "data" / "config" / "dp02.yaml"
 
     butler_collections = [
         ButlerDataCollection(
             config=data_config,
             label="LSST.DP02",
+            name="dp02",
+            butler_type=ButlerType.REMOTE,
             repository=HttpUrl("https://example/repo/dp02/butler.yaml"),
-            default=True,
-            defaultinstrument="LSSTCam-imSim",
+            default_instrument="LSSTCam-imSim",
         ),
     ]
     monkeypatch.setattr(config, "path_prefix", "/api/sia")
-    monkeypatch.setattr(config, "butler_type", ButlerType.REMOTE)
     monkeypatch.setattr(config, "butler_data_collections", butler_collections)
 
     async with LifespanManager(main.app):
@@ -81,14 +101,14 @@ async def app_direct(
         ButlerDataCollection(
             config=config_file,
             repository=repo_path,
-            default=True,
-            defaultinstrument="LSSTCam-imSim",
+            butler_type=ButlerType.DIRECT,
             label="ci_hsc_gen3",
+            name="hsc",
+            default_instrument="HSC",
         ),
     ]
 
     monkeypatch.setattr(config, "path_prefix", "/api/sia")
-    monkeypatch.setattr(config, "butler_type", ButlerType.DIRECT)
     monkeypatch.setattr(config, "butler_data_collections", butler_collections)
 
     async with LifespanManager(main.app):
@@ -101,7 +121,6 @@ async def client_direct(app_direct: FastAPI) -> AsyncIterator[AsyncClient]:
     async with AsyncClient(
         transport=ASGITransport(app=app_direct),
         base_url="https://example.com/",
-        headers={"X-Auth-Request-Token": "sometoken"},
     ) as client:
         yield client
 
@@ -129,16 +148,16 @@ async def test_config_remote() -> Config:
         ButlerDataCollection(
             config=config,
             label="LSST.DP02",
-            defaultinstrument="LSSTCam-imSim",
+            name="dp02",
             repository=HttpUrl(
                 "https://example.com/api/butler/repo/dp02/butler" ".yaml"
             ),
-            default=True,
+            butler_type=ButlerType.REMOTE,
+            default_instrument="LSSTCam-imSim",
         ),
     ]
     return Config(
         path_prefix="/api/sia",
-        butler_type=ButlerType.REMOTE,
         butler_data_collections=butler_collections,
     )
 
@@ -160,14 +179,14 @@ async def test_config_direct() -> Config:
         ButlerDataCollection(
             config=config_file,
             repository=repo_path,
-            default=True,
+            butler_type=ButlerType.DIRECT,
             label="ci_hsc_gen3",
-            defaultinstrument="LSSTCam-imSim",
+            name="hsc",
+            default_instrument="LSSTCam-imSim",
         ),
     ]
 
     return Config(
-        butler_type=ButlerType.DIRECT,
         butler_data_collections=butler_collections,
     )
 
@@ -199,12 +218,6 @@ def mock_async_client(
     )
 
     return mock_client, mock_response
-
-
-@pytest.fixture
-def empty_config() -> Config:
-    """Return a mock Config instance."""
-    return Config(butler_data_collections=[], butler_type=ButlerType.REMOTE)
 
 
 @pytest.fixture

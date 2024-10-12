@@ -3,7 +3,6 @@
 from dataclasses import dataclass
 
 from ..config import Config
-from ..exceptions import FatalFaultError, UsageFaultError
 from ..models.data_collections import ButlerDataCollection
 
 
@@ -12,44 +11,88 @@ class DataCollectionService:
     """Data Collection service class."""
 
     config: Config
+    """The configuration object for the data collection."""
 
-    def get_default_collection(
+    def _get_data_collection(
         self,
+        *,
+        key: str,
+        value: str,
+        attribute: str,
     ) -> ButlerDataCollection:
-        """Return the default Data collection.
+        """Return the Data collection for the given attribute and value.
 
+        Parameters
+        ----------
+        key
+            The name of the attribute being searched (for error messages).
+        value
+            The value to search for.
+        attribute
+            The attribute of ButlerDataCollection to match against.
 
         Returns
         -------
         ButlerDataCollection
-            The default Butler Data collection.
+            The Butler Data collection.
 
         Raises
         ------
-        FatalFaultError
-            If no default Data collection is found.
+        ValueError
+            If the value is empty.
+        KeyError
+            If the value is not found in the Data collections.
         """
+        if not value:
+            raise ValueError(f"{key.capitalize()} is required.")
+
         for collection in self.config.butler_data_collections:
-            if collection.default:
+            if getattr(collection, attribute).upper() == value.upper():
                 return collection
 
-        raise FatalFaultError(
-            detail="No default Collection found. Please configure a default."
+        raise KeyError(
+            f"{key.capitalize()} {value} not found in Data collections."
         )
 
-    def get_data_collection(
+    def get_data_collection_by_label(
         self,
         *,
-        label: str | None,
+        label: str,
     ) -> ButlerDataCollection:
         """Return the Data collection URL for the given label.
-        If no label is provided, return the default data collection.
 
         Parameters
         ----------
         label
             The label of the data collection.
 
+        Returns
+        -------
+        ButlerDataCollection
+            The Butler Data collection.
+
+        Raises
+        ------
+        ValueError
+            No label was provided
+        KeyError
+            If the label is not found in the Data collections.
+        """
+        return self._get_data_collection(
+            key="label", value=label, attribute="label"
+        )
+
+    def get_data_collection_by_name(
+        self,
+        *,
+        name: str,
+    ) -> ButlerDataCollection:
+        """Return the Data collection URL for the given name.
+
+        Parameters
+        ----------
+        name
+            The name of the data collection.
 
         Returns
         -------
@@ -60,33 +103,18 @@ class DataCollectionService:
         ------
         KeyError
             If the label is not found in the Data collections.
-        FatalFaultError
-            If no Data collections are configured.
+
         UsageFaultError
             If the label is not found in the Data collections.
         """
-        if not label:
-            if len(self.config.butler_data_collections) == 0:
-                raise FatalFaultError(
-                    detail="No Data Collections configured. Please configure "
-                    "at least one Data collection."
-                )
-            # Return the first one if no label is provided
-            return self.config.butler_data_collections[0]
-
-        # Find the Data collection with the given label
-        # Do a case-sensitive search
-        for collection in self.config.butler_data_collections:
-            if collection.label == label:
-                return collection
-
-        raise UsageFaultError(
-            detail=f"Label {label} not found in Data collections."
+        return self._get_data_collection(
+            key="name", value=name, attribute="name"
         )
 
     def get_data_repositories(self) -> dict[str, str]:
         """Read the Data repositories from config and return a dictionary
         mapping labels to repository URLs.
+        This is used to populate the LabeledButlerFactory.
 
         Returns
         -------

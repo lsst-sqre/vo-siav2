@@ -2,13 +2,12 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Self
 
-from pydantic import Field, HttpUrl
+from pydantic import Field, HttpUrl, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from safir.logging import LogLevel, Profile
 
-from .models.butler_type import ButlerType
 from .models.data_collections import ButlerDataCollection
 
 __all__ = ["Config", "config"]
@@ -36,19 +35,29 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(env_prefix="SIA_", case_sensitive=False)
     """Configuration for the model settings."""
 
-    butler_type: ButlerType = ButlerType.REMOTE
-    """Configuration for the butler type."""
-
     butler_data_collections: Annotated[
         list[ButlerDataCollection],
         Field(title="Data collections"),
-    ] = []
+    ]
     """Configuration for the data collections."""
 
     slack_webhook: Annotated[
         HttpUrl | None, Field(title="Slack webhook for exception reporting")
     ] = None
     """Slack webhook for exception reporting."""
+
+    @model_validator(mode="after")
+    def _validate_butler_data_collections(self) -> Self:
+        """Validate the Butler data collections."""
+        from .exceptions import FatalFaultError
+
+        if len(self.butler_data_collections) == 0:
+            raise FatalFaultError(
+                detail="No Data Collections configured. Please configure "
+                "at least one Data collection."
+            )
+
+        return self
 
 
 config = Config()

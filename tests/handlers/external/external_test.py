@@ -85,7 +85,7 @@ async def test_query_endpoint_mocker_get(
     for the Butler SIAv2 query.
     """
     response = await client.get(
-        f"{config.path_prefix}/query?{query_params}",
+        f"{config.path_prefix}/dp02/query?{query_params}",
     )
 
     # Remove XML declaration and comments
@@ -148,7 +148,7 @@ async def test_query_endpoint_get(
     expected_message: str | None,
 ) -> None:
     response = await client_direct.get(
-        f"{config.path_prefix}/query?{query_params}"
+        f"{config.path_prefix}/hsc/query?{query_params}"
     )
 
     assert response.status_code == expected_status
@@ -180,13 +180,13 @@ async def test_query_endpoint_get(
             },
             400,
             "application/xml",
-            "Unrecognized shape in POS string 'SOME_SHAPE 321 0 1'",
+            EXCEPTION_MESSAGES["invalid_pos"],
         ),
         (
-            {"POS": "CIRCLE 0 0 1", "TIME": "ABC"},
+            {"pos": "CIRCLE 0 0 1", "TIME": "ABC"},
             400,
             "application/xml",
-            "could not convert string to float: 'ABC'",
+            EXCEPTION_MESSAGES["invalid_time"],
         ),
         (
             {"POS": "CIRCLE 321 0 1", "BAND": "700e-9", "FORMAT": "votable"},
@@ -211,19 +211,15 @@ async def test_query_endpoint_post(
     expected_votable: str,
 ) -> None:
     """Test ``POST /api/sia/query`` with various parameters."""
-    if expected_status == 400:
-        with pytest.raises(ValueError, match=expected_message):
-            response = await client_direct.post(
-                f"{config.path_prefix}/query", data=post_data
-            )
-    else:
-        response = await client_direct.post(
-            f"{config.path_prefix}/query", data=post_data
-        )
-        assert response.status_code == expected_status
-        assert expected_content_type in response.headers["content-type"]
+    response = await client_direct.post(
+        f"{config.path_prefix}/hsc/query", data=post_data
+    )
+    assert response.status_code == expected_status
 
+    if expected_status == 200:
         assert "content-disposition" in response.headers
         assert response.headers["content-disposition"].startswith(
             f"attachment; filename={RESULT_NAME}.xml"
         )
+    elif expected_status == 400:
+        validate_votable_error(response, expected_message)

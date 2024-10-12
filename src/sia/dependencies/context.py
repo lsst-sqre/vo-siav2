@@ -14,7 +14,8 @@ from safir.dependencies.logger import logger_dependency
 from structlog.stdlib import BoundLogger
 
 from ..config import Config
-from ..factory import Factory, ProcessContext
+from ..factory import Factory
+from .labeled_butler_factory import labeled_butler_factory_dependency
 
 __all__ = [
     "ContextDependency",
@@ -68,7 +69,6 @@ class ContextDependency:
 
     def __init__(self) -> None:
         self._config: Config | None = None
-        self._process_context: ProcessContext | None = None
 
     async def __call__(
         self,
@@ -77,38 +77,30 @@ class ContextDependency:
         logger: Annotated[BoundLogger, Depends(logger_dependency)],
     ) -> RequestContext:
         """Create a per-request context and return it."""
-        if not self._config or not self._process_context:
+        if not self._config:
             raise RuntimeError("ContextDependency not initialized")
 
         return RequestContext(
             request=request,
             config=self._config,
             logger=logger,
-            factory=Factory(
-                process_context=self._process_context, logger=logger
-            ),
+            factory=await self.create_factory(logger=logger),
         )
 
-    @property
-    def process_context(self) -> ProcessContext:
-        """The underlying process context, primarily for use in tests."""
-        if not self._process_context:
-            raise RuntimeError("ContextDependency not initialized")
-        return self._process_context
-
-    def create_factory(self, logger: BoundLogger) -> Factory:
+    async def create_factory(self, logger: BoundLogger) -> Factory:
         """Create a factory for use outside a request context."""
+        if not self._config:
+            raise RuntimeError("ContextDependency not initialized")
+
         return Factory(
             logger=logger,
-            process_context=self.process_context,
+            config=self._config,
+            labeled_butler_factory=await labeled_butler_factory_dependency(),
         )
 
     async def aclose(self) -> None:
         """Clean up the per-process configuration."""
-        if self._process_context:
-            await self._process_context.aclose()
         self._config = None
-        self._process_context = None
 
     async def initialize(
         self,
@@ -121,10 +113,7 @@ class ContextDependency:
         config
             SIA configuration.
         """
-        if self._process_context:
-            await self._process_context.aclose()
         self._config = config
-        self._process_context = await ProcessContext.create()
 
 
 context_dependency = ContextDependency()

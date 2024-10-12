@@ -3,12 +3,12 @@
 import pytest
 from fastapi import FastAPI
 
+from sia.errors import votable_exception_handler
 from sia.exceptions import (
     DefaultFaultError,
     FatalFaultError,
     TransientFaultError,
     UsageFaultError,
-    votable_exception_handler,
 )
 
 app = FastAPI()

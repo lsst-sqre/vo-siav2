@@ -12,10 +12,12 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from importlib.metadata import metadata, version
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, Response
+from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
 from safir.dependencies.http_client import http_client_dependency
 from safir.logging import configure_logging, configure_uvicorn_logging
+from safir.middleware.ivoa import CaseInsensitiveQueryMiddleware
 from safir.middleware.x_forwarded import XForwardedMiddleware
 from safir.slack.webhook import SlackRouteErrorHandler
 from structlog import get_logger
@@ -25,11 +27,11 @@ from .dependencies.context import context_dependency
 from .dependencies.labeled_butler_factory import (
     labeled_butler_factory_dependency,
 )
-from .exceptions import configure_exception_handlers
+from .errors import votable_exception_handler
+from .exceptions import VOTableError
 from .handlers.external import external_router
 from .handlers.internal import internal_router
-from .middleware.ivoa import CaseInsensitiveQueryAndBodyMiddleware
-from .models.butler_type import ButlerType
+from .middleware.ivoa import CaseInsensitiveFormMiddleware
 
 __all__ = ["app"]
 
@@ -41,16 +43,15 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """Set up and tear down the application."""
     logger.debug("SIA has started up.")
-    if config.butler_type is ButlerType.REMOTE:
-        await labeled_butler_factory_dependency.initialize(config=config)
+    await labeled_butler_factory_dependency.initialize(config=config)
     await context_dependency.initialize(config=config)
+    await labeled_butler_factory_dependency.initialize(config=config)
 
     yield
 
-    if config.butler_type is ButlerType.REMOTE:
-        await labeled_butler_factory_dependency.close()
-
+    await labeled_butler_factory_dependency.aclose()
     await context_dependency.aclose()
+    await labeled_butler_factory_dependency.aclose()
     logger.debug("SIA shut down complete.")
     await http_client_dependency.aclose()
 
@@ -73,8 +74,37 @@ app = FastAPI(
 )
 """The main FastAPI application for sia."""
 
+
+def configure_exception_handlers(app: FastAPI) -> None:
+    """Configure the exception handlers for the application.
+    Handle by formatting as VOTable with the appropriate error message.
+
+    Parameters
+    ----------
+    app
+        The FastAPI application instance.
+    """
+
+    @app.exception_handler(VOTableError)
+    @app.exception_handler(RequestValidationError)
+    async def custom_exception_handler(
+        request: Request, exc: Exception
+    ) -> Response:
+        """Handle exceptions that should be returned as VOTable errors.
+
+        Parameters
+        ----------
+        request
+            The incoming request.
+        exc
+            The exception to handle.
+        """
+        return await votable_exception_handler(request, exc)
+
+
 # Address case-sensitivity issue with IVOA query parameters
-app.add_middleware(CaseInsensitiveQueryAndBodyMiddleware)
+app.add_middleware(CaseInsensitiveFormMiddleware)
+app.add_middleware(CaseInsensitiveQueryMiddleware)
 
 # Configure exception handlers.
 configure_exception_handlers(app)

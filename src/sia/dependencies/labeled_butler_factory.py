@@ -10,30 +10,34 @@ class LabeledButlerFactoryDependency:
     """Provides a remote butler factory as a dependency."""
 
     def __init__(self) -> None:
-        self.labeled_butler_factory: LabeledButlerFactory | None = None
+        self._labeled_butler_factory: LabeledButlerFactory | None = None
 
     async def initialize(
         self,
         config: Config,
     ) -> None:
         """Initialize the dependency."""
+        # Get the data repositories from the config in a format suitable for
+        # the LabeledButlerFactory.
         data_repositories = DataCollectionService(
             config=config
         ).get_data_repositories()
-        self.labeled_butler_factory = LabeledButlerFactory(
+
+        self._labeled_butler_factory = LabeledButlerFactory(
             repositories=data_repositories
         )
 
     async def __call__(self) -> LabeledButlerFactory:
         """Return the LabeledButlerFactory instance."""
-        if self.labeled_butler_factory is None:
+        if self._labeled_butler_factory is None:
             raise RuntimeError(
                 "LabeledButlerFactoryDependency is not initialized"
             )
-        return self.labeled_butler_factory
+        return self._labeled_butler_factory
 
-    async def close(self) -> None:
+    async def aclose(self) -> None:
         """Close in this case has no effect."""
+        self._labeled_butler_factory = None
 
 
 labeled_butler_factory_dependency = LabeledButlerFactoryDependency()

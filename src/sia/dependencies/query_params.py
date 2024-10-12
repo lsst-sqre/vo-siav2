@@ -1,64 +1,44 @@
-"""Provides functions to get instances of ParamFactory."""
+"""Provides functions to get instances of params."""
 
-from collections import defaultdict
+from typing import Annotated
 
-from fastapi import Request
+from fastapi import Depends
+from lsst.dax.obscore.siav2 import SIAv2Parameters
 
-from ..constants import SINGLE_PARAMS
-from ..models.sia_query_params import SIAQueryParams
+from ..models.sia_query_params import SIAFormParams, SIAQueryParams
 
 
-async def sia_post_params_dependency(
-    *,
-    request: Request,
-) -> SIAQueryParams:
-    """Dependency to parse the POST parameters for the SIA query.
+def get_query_params(
+    params: Annotated[SIAQueryParams, Depends(SIAQueryParams)],
+) -> SIAv2Parameters:
+    """Get the SIAv2Parameters from the query parameters.
 
     Parameters
     ----------
-    request
-        The request object.
+    params
+        The query parameters.
 
     Returns
     -------
-    SIAQueryParams
-        The parameters for the SIA query.
-
-    Raises
-    ------
-    ValueError
-        If the method is not POST.
+    SIAv2Parameters
+        The SIAv2Parameters instance.
     """
-    if request.method != "POST":
-        raise ValueError("sia_post_params_dependency used for non-POST route")
-    content_type = request.headers.get("Content-Type", "")
-    params_dict: dict[str, list[str]] = defaultdict(list)
+    return params.to_butler_parameters()
 
-    # Handle JSON Content-Type
-    # This isn't required by the SIA spec, but it may be useful for
-    # deugging, for future expansion the spec and for demonstration purposes.
-    if "application/json" in content_type:
-        json_data = await request.json()
-        for key, value in json_data.items():
-            lower_key = key.lower()
-            if isinstance(value, list):
-                params_dict[lower_key].extend(str(v) for v in value)
-            else:
-                params_dict[lower_key].append(str(value))
 
-    else:  # Assume form data
-        form_data = await request.form()
-        for key, value in form_data.multi_items():
-            if not isinstance(value, str):
-                raise TypeError("File upload not supported")
-            lower_key = key.lower()
-            params_dict[lower_key].append(value)
+def get_form_params(
+    params: Annotated[SIAFormParams, Depends(SIAFormParams)],
+) -> SIAv2Parameters:
+    """Get the SIAv2Parameters from the form parameters.
 
-    converted_params_dict = {}
-    for key, value in params_dict.items():
-        if key in SINGLE_PARAMS:
-            converted_params_dict[key] = value[0]
-        else:
-            converted_params_dict[key] = value
+    Parameters
+    ----------
+    params
+        The form parameters.
 
-    return SIAQueryParams.from_dict(converted_params_dict)
+    Returns
+    -------
+    SIAv2Parameters
+        The SIAv2Parameters instance.
+    """
+    return params.to_butler_parameters()

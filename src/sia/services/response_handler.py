@@ -1,7 +1,6 @@
 """Module for the Query Processor service."""
 
 from collections.abc import Callable
-from datetime import UTC, datetime
 
 import astropy
 import structlog
@@ -13,7 +12,7 @@ from starlette.responses import Response
 
 from ..constants import RESULT_NAME as RESULT
 from ..factory import Factory
-from ..models.sia_query_params import SIAQueryParams
+from ..models.data_collections import ButlerDataCollection
 from ..services.votable import VotableConverterService
 
 logger = structlog.get_logger(__name__)
@@ -31,9 +30,10 @@ class ResponseHandlerService:
     def process_query(
         *,
         factory: Factory,
-        params: SIAQueryParams,
+        params: SIAv2Parameters,
         sia_query: SIAv2QueryType,
         request: Request,
+        collection: ButlerDataCollection,
         token: str | None,
     ) -> Response:
         """Process the SIAv2 query and generate a Response.
@@ -48,6 +48,8 @@ class ResponseHandlerService:
             The SIA query method to use
         request
             The request object.
+        collection
+            The Butler data collection
         token
             The token to use for the Butler (Optional).
 
@@ -60,32 +62,18 @@ class ResponseHandlerService:
             "SIA query started with params:",
             params=params,
             method=request.method,
-            time=datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S"),
-        )
-        data_collection_service = factory.create_data_collection_service()
-
-        # Get the Butler collection configuration.
-        # If many collections are provided, for now just look for the
-        # default one. This needs to be updated to handle multiple collections.
-        collection = (
-            data_collection_service.get_data_collection(
-                label=params.collection[0],
-            )
-            if params.collection is not None and len(params.collection) > 0
-            else data_collection_service.get_default_collection()
         )
 
         butler = factory.create_butler(
             butler_collection=collection,
             token=token,
-            config_path=str(collection.config),
         )
 
         # Execute the query
         table_as_votable = sia_query(
             butler,
-            collection.exporter_config,
-            params.to_butler_parameters(),
+            collection.get_exporter_config(),
+            params,
         )
 
         # Convert the result to a string

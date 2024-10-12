@@ -1,24 +1,20 @@
 """Middleware for IVOA services."""
 
-import json
 from copy import copy
-from typing import Any
 from urllib.parse import parse_qsl, urlencode
 
 from starlette.types import ASGIApp, Receive, Scope, Send
 
-__all__ = ["CaseInsensitiveQueryAndBodyMiddleware"]
+__all__ = ["CaseInsensitiveFormMiddleware"]
 
 
-class CaseInsensitiveQueryAndBodyMiddleware:
-    """Make query parameter keys and POST body keys all lowercase.
+class CaseInsensitiveFormMiddleware:
+    """Make POST parameter keys all lowercase.
 
     This middleware attempts to work around case-sensitivity issues by
-    lowercasing the query parameter keys and POST body keys before the
-    request is processed. This allows normal FastAPI parsing to work without
-    regard for case, permitting FastAPI to perform input validation on both
-    GET and POST parameters.
-
+    lowercasing POST parameter keys before the request is processed. This
+    allows normal FastAPI parsing to work without regard for case, permitting
+    FastAPI to perform input validation on the POST parameters.
     """
 
     def __init__(self, *, app: ASGIApp) -> None:
@@ -43,18 +39,31 @@ class CaseInsensitiveQueryAndBodyMiddleware:
 
         scope = copy(scope)
 
-        if scope.get("query_string"):
-            params = [
-                (k.lower(), v) for k, v in parse_qsl(scope["query_string"])
-            ]
-            scope["query_string"] = urlencode(params).encode()
-
-        if scope["method"] == "POST":
-            body = await self.get_body(receive)
-            modified_body = await self.process_body(body)
-            receive = self.wrapped_receive(modified_body)
+        if scope["method"] == "POST" and self.is_form_data(scope):
+            receive = self.wrapped_receive(receive)
 
         await self._app(scope, receive, send)
+
+    @staticmethod
+    def is_form_data(scope: Scope) -> bool:
+        """Check if the request contains form data.
+
+        Parameters
+        ----------
+        scope
+            The request scope.
+
+        Returns
+        -------
+        bool
+            True if the request contains form data, False otherwise.
+        """
+        headers = {
+            k.decode("latin-1"): v.decode("latin-1")
+            for k, v in scope.get("headers", [])
+        }
+        content_type = headers.get("content-type", "")
+        return content_type.startswith("application/x-www-form-urlencoded")
 
     @staticmethod
     async def get_body(receive: Receive) -> bytes:
@@ -78,8 +87,9 @@ class CaseInsensitiveQueryAndBodyMiddleware:
             more_body = message.get("more_body", False)
         return body
 
-    async def process_body(self, body: bytes) -> bytes:
-        """Process the body, lowercasing keys if it's JSON.
+    @staticmethod
+    async def process_form_data(body: bytes) -> bytes:
+        """Process the body, lowercasing keys of form data.
 
         Parameters
         ----------
@@ -89,44 +99,21 @@ class CaseInsensitiveQueryAndBodyMiddleware:
         Returns
         -------
         bytes
-            The processed request body.
+            The processed request body with lowercased keys.
         """
-        try:
-            data = json.loads(body)
-            if isinstance(data, dict):
-                data = self.lowercase_keys_recursive(data)
-            return json.dumps(data).encode()
-        except json.JSONDecodeError:
-            return body
+        body_str = body.decode("utf-8")
+        parsed = parse_qsl(body_str)
+        lowercased = [(key.lower(), value) for key, value in parsed]
+        processed = urlencode(lowercased)
+        return processed.encode("utf-8")
 
-    def lowercase_keys_recursive(self, data: dict[str, Any]) -> dict[str, Any]:
-        """Recursively lowercase all dictionary keys.
+    def wrapped_receive(self, receive: Receive) -> Receive:
+        """Wrap the receive function to process form data.
 
         Parameters
         ----------
-        data
-            The dictionary to process.
-
-        Returns
-        -------
-        Dict[str, Any]
-            The dictionary with all keys lowercased.
-        """
-        return {
-            k.lower(): (
-                self.lowercase_keys_recursive(v) if isinstance(v, dict) else v
-            )
-            for k, v in data.items()
-        }
-
-    @staticmethod
-    def wrapped_receive(body: bytes) -> Receive:
-        """Wrap the receive function to return our modified body.
-
-        Parameters
-        ----------
-        body
-            The modified request body.
+        receive
+            The receive function to wrap.
 
         Returns
         -------
@@ -134,7 +121,14 @@ class CaseInsensitiveQueryAndBodyMiddleware:
             The wrapped receive function.
         """
 
-        async def receive_wrapper() -> dict[str, Any]:
-            return {"type": "http.request", "body": body, "more_body": False}
+        async def inner() -> dict:
+            """Process the form data and return the request."""
+            body = await self.get_body(receive)
+            processed_body = await self.process_form_data(body)
+            return {
+                "type": "http.request",
+                "body": processed_body,
+                "more_body": False,
+            }
 
-        return receive_wrapper
+        return inner

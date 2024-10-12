@@ -2,55 +2,16 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Self
-
+import structlog
+from lsst.daf.butler import Butler, LabeledButlerFactory
 from lsst.daf.butler.registry import RegistryDefaults
 from structlog.stdlib import BoundLogger
 
-from .config import Config, config
-
-__all__ = ["Factory", "ProcessContext"]
-
-import structlog
-from lsst.daf.butler import Butler, LabeledButlerFactory
-
-from .dependencies.labeled_butler_factory import (
-    labeled_butler_factory_dependency,
-)
-from .exceptions import FatalFaultError
-from .models.butler_type import ButlerType
+from .config import Config
 from .models.data_collections import ButlerDataCollection
 from .services.data_collections import DataCollectionService
 
-
-@dataclass(frozen=True, slots=True)
-class ProcessContext:
-    """Per-process application context.
-
-    This object caches all of the per-process singletons that can be reused
-    for every request.
-    """
-
-    config: Config
-    """SIA's configuration."""
-
-    labeled_butler_factory: LabeledButlerFactory | None
-    """The Labeled Butler factory."""
-
-    @classmethod
-    async def create(cls) -> Self:
-        labeled_butler_factory = (
-            await labeled_butler_factory_dependency()
-            if config.butler_type is ButlerType.REMOTE
-            else None
-        )
-        return cls(
-            config=config, labeled_butler_factory=labeled_butler_factory
-        )
-
-    async def aclose(self) -> None:
-        """Close any resources held by the context."""
+__all__ = ["Factory"]
 
 
 class Factory:
@@ -61,21 +22,26 @@ class Factory:
 
     Parameters
     ----------
-    process_context
-        Shared process context.
+    config
+        The configuration instance
+    labeled_butler_factory
+        The LabeledButlerFactory singleton
+    logger
+        The logger instance
     """
 
     def __init__(
         self,
-        process_context: ProcessContext,
+        config: Config,
+        labeled_butler_factory: LabeledButlerFactory,
         logger: BoundLogger | None = None,
     ) -> None:
-        self._process_context = process_context
+        self._config = config
+        self._labeled_butler_factory = labeled_butler_factory
         self._logger = logger if logger else structlog.get_logger("mobu")
 
     def create_butler(
         self,
-        config_path: str,
         butler_collection: ButlerDataCollection,
         token: str | None = None,
     ) -> Butler:
@@ -83,8 +49,6 @@ class Factory:
 
         Parameters
         ----------
-        config_path
-            The path to the Butler configuration.
         butler_collection
             The Butler data collection.
         token
@@ -95,47 +59,14 @@ class Factory:
         Butler
             The Butler instance.
         """
-        app_config = self._process_context.config
-        if not config_path:
-            raise ValueError(
-                "No Butler configuration file configured <butler_config>"
-            )
+        butler = self._labeled_butler_factory.create_butler(
+            label=butler_collection.label, access_token=token
+        )
 
-        if app_config.butler_type is ButlerType.DIRECT:
-            if not butler_collection.repository:
-                raise ValueError(
-                    "No Butler repository configured <butler_repo>"
-                )
-
-            butler = Butler.from_config(
-                str(butler_collection.repository), writeable=False
-            )
-        else:
-            if not butler_collection.label:
-                raise FatalFaultError(
-                    detail="No Butler label configured <label>"
-                )
-            if not token:
-                raise FatalFaultError(
-                    detail="Token is required for RemoteButlerQueryEngine"
-                )
-
-            if not self._process_context.labeled_butler_factory:
-                raise FatalFaultError(
-                    detail="No LabeledButlerFactory configured"
-                )
-
-            butler = (
-                self._process_context.labeled_butler_factory.create_butler(
-                    label=butler_collection.label, access_token=token
-                )
-            )
-
-            # TODO (stvoutsin): Temporary workaround for DP02
-            butler.registry.defaults = RegistryDefaults(
-                instrument=butler_collection.defaultinstrument
-            )
-
+        # Temporary workaround
+        butler.registry.defaults = RegistryDefaults(
+            instrument=butler_collection.default_instrument,
+        )
         return butler
 
     def create_data_collection_service(self) -> DataCollectionService:
@@ -147,7 +78,7 @@ class Factory:
             The data collection service.
         """
         return DataCollectionService(
-            config=self._process_context.config,
+            config=self._config,
         )
 
     def set_logger(self, logger: BoundLogger) -> None:

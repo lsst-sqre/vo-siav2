@@ -14,7 +14,7 @@ class VotableConverterService:
 
     Attributes
     ----------
-    votable : VOTableFile
+    votable
         The VOTableFile object to convert.
     """
 

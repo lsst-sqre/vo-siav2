@@ -21,7 +21,7 @@ pydantic-settings
 safir>=5
 numpy
 astropy
-vo-models==0.3.1
+vo-models
 defusedxml
 lsst-daf-butler[remote]
 lsst-dax-obscore @ git+https://github.com/lsst-dm/dax_obscore@main

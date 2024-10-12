@@ -5,25 +5,23 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.templating import Jinja2Templates
-from lsst.dax.obscore.siav2 import siav2_query
+from lsst.dax.obscore.siav2 import SIAv2Parameters, siav2_query
 from safir.dependencies.logger import logger_dependency
 from safir.metadata import get_metadata
 from safir.models import ErrorModel
-from starlette.concurrency import run_in_threadpool
 from starlette.responses import Response
 from structlog.stdlib import BoundLogger
-from vo_models.vosi.availability import Availability
 
 from ..config import config
-from ..dependencies.availability import get_availability_dependency
 from ..dependencies.context import RequestContext, context_dependency
-from ..dependencies.query_params import sia_post_params_dependency
+from ..dependencies.data_collections import validate_collection
+from ..dependencies.query_params import get_form_params, get_query_params
 from ..dependencies.token import optional_auth_delegated_token_dependency
-from ..exceptions import handle_exceptions
+from ..models.data_collections import ButlerDataCollection
 from ..models.index import Index
-from ..models.sia_query_params import SIAQueryParams
+from ..services.availability import AvailabilityService
+from ..services.data_collections import DataCollectionService
 from ..services.response_handler import ResponseHandlerService
-from ..timer import timer
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 _TEMPLATES = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
@@ -71,99 +69,57 @@ async def get_index(
 
 
 @external_router.get(
-    "/availability",
+    "/{collection_name}/availability",
     description="VOSI-availability resource for the service",
     responses={200: {"content": {"application/xml": {}}}},
     summary="IVOA service availability",
 )
-async def get_availability(
-    availability: Annotated[
-        Availability, Depends(get_availability_dependency)
-    ],
-) -> Response:
-    """Endpoint which provides the VOSI-availability resource, which indicates
-    whether the service is currently available, returned as an XML document.
+async def get_availability(collection_name: str) -> Response:
+    # Get the butler data collection
+    collection = DataCollectionService(
+        config=config
+    ).get_data_collection_by_name(name=collection_name)
 
-    Parameters
-    ----------
-    availability
-        The system availability as dependency
+    # Check if it is available
+    availability = await AvailabilityService(
+        collection=collection
+    ).get_availability()
 
-    Returns
-    -------
-    Response
-        The response containing the VOSI-availability XML document.
-
-    ## GET /api/sia/availability
-
-    **Example XML Response**:
-    ```xml
-    <?xml version="1.0" encoding="UTF-8"?>
-    <availability xmlns="http://www.ivoa.net/xml/VOSIAvailability/v1.0">
-        <available>true</available>
-    </availability>
-    ```
-    """
     xml = availability.to_xml(skip_empty=True)
     return Response(content=xml, media_type="application/xml")
 
 
 @external_router.get(
-    "/capabilities",
+    "/{collection_name}/capabilities",
     description="VOSI-capabilities resource for the SIA service.",
     responses={200: {"content": {"application/xml": {}}}},
     summary="IVOA service capabilities",
 )
 async def get_capabilities(
+    collection_name: str,
     request: Request,
 ) -> Response:
-    """Endpoint which provides the VOSI-capabilities resource, which lists the
-    capabilities of the SIA service, as an XML document (VOSI-capabilities).
-
-    Parameters
-    ----------
-    request
-        The request object.
-    logger
-        The logger instance.
-
-    Returns
-    -------
-    Response
-        The response containing the VOSI-capabilities XML document.
-
-    ## GET /api/sia/capabilities
-
-    **Example XML Response**:
-    ```xml
-    <?xml version="1.0"?>
-    <capabilities
-        xmlns:vosi="http://www.ivoa.net/xml/VOSICapabilities/v1.0"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xmlns:vod="http://www.ivoa.net/xml/VODataService/v1.1">
-       <capability standardID="ivo://ivoa.net/std/SIA#query-2.0">
-         <interface xsi:type="vod:ParamHTTP" role="std" version="2.0">
-             <accessURL>{{ query_url }}</accessURL>
-         </interface>
-       </capability>
-    </capabilities>
-    ```
-    """
     return _TEMPLATES.TemplateResponse(
         request,
         "capabilities.xml",
         {
             "request": request,
-            "availability_url": request.url_for("get_availability"),
-            "capabilities_url": request.url_for("get_capabilities"),
-            "query_url": request.url_for("query_get"),
+            "availability_url": request.url_for(
+                "get_availability", collection_name=collection_name
+            ),
+            "capabilities_url": request.url_for(
+                "get_capabilities", collection_name=collection_name
+            ),
+            "query_url": request.url_for(
+                "query_get", collection_name=collection_name
+            ),
         },
         media_type="application/xml",
     )
 
 
 @external_router.get(
-    "/query",
+    "/{collection_name}/query",
     description="Query endpoint for the SIA service.",
     responses={
         200: {"content": {"application/xml": {}}},
@@ -174,63 +130,27 @@ async def get_capabilities(
     },
     summary="IVOA SIA service query",
 )
-@timer
-@handle_exceptions
 def query_get(
+    *,
     context: Annotated[RequestContext, Depends(context_dependency)],
-    params: Annotated[SIAQueryParams, Depends()],
+    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
+    params: Annotated[SIAv2Parameters, Depends(get_query_params)],
     delegated_token: Annotated[
         str | None, Depends(optional_auth_delegated_token_dependency)
     ],
 ) -> Response:
-    """Endpoint used to query the SIA service using various
-    parameters defined in the SIA spec via a GET request.
-    The response is an XML VOTable file that adheres the Obscore model.
-
-    Parameters
-    ----------
-    context
-        The RequestContext object
-    delegated_token
-        The delegated token. (Optional)
-    params
-        The parameters for the SIA query.
-
-    Returns
-    -------
-    Response
-        The response containing the query results.
-
-    Examples
-    --------
-    ### GET /api/sia/query
-    ```
-    /api/sia/query?POS=CIRCLE+321+0+1&BAND=700e-9&FORMAT=votable
-    ```
-
-    Notes
-    -----
-    We don't include any parameter validation here because the siav2_query
-    from the dax_obscore already does this so we didn't want to duplicate.
-    The siav2_query will raise a ValueError if the parameters are invalid.
-
-    See Also
-    --------
-    SIA Specification: http://www.ivoa.net/documents/SIA/
-    ObsCore Data Model: http://www.ivoa.net/documents/ObsCore/
-    """
     return ResponseHandlerService.process_query(
         factory=context.factory,
         params=params,
         token=delegated_token,
         sia_query=siav2_query,
+        collection=collection,
         request=context.request,
     )
 
 
-@handle_exceptions
 @external_router.post(
-    "/query",
+    "/{collection_name}/query",
     description="Query endpoint for the SIA service (POST method).",
     responses={
         200: {"content": {"application/xml": {}}},
@@ -241,57 +161,20 @@ def query_get(
     },
     summary="IVOA SIA (v2) service query (POST)",
 )
-async def query_post(
+def query_post(
     *,
     context: Annotated[RequestContext, Depends(context_dependency)],
-    params: Annotated[SIAQueryParams, Depends(sia_post_params_dependency)],
+    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
+    params: Annotated[SIAv2Parameters, Depends(get_form_params)],
     delegated_token: Annotated[
         str | None, Depends(optional_auth_delegated_token_dependency)
     ],
 ) -> Response:
-    """Endpoint used to query the SIA service using various
-    parameters defined in the SIA spec via a POST request.
-    The response is an XML VOTable file that adheres the Obscore model.
-
-    Parameters
-    ----------
-    context
-        The RequestContext object
-    delegated_token
-        The delegated token. (Optional)
-    params
-        The parameters for the SIA query.
-
-
-    Returns
-    -------
-    Response
-        The response containing the query results.
-
-    Examples
-    --------
-    ### POST /api/sia/query
-    ```
-    POST /api/sia/query
-    Content-Type: application/json
-
-    {
-        "POS": "CIRCLE 321 0 1",
-        "BAND": "700e-9",
-        "FORMAT": "votable"
-    }
-    ```
-
-    See Also
-    --------
-    SIA Specification: http://www.ivoa.net/documents/SIA/
-    ObsCore Data Model: http://www.ivoa.net/documents/ObsCore/
-    """
-    return await run_in_threadpool(
-        ResponseHandlerService.process_query,
-        params=params,
+    return ResponseHandlerService.process_query(
         factory=context.factory,
+        params=params,
         token=delegated_token,
         sia_query=siav2_query,
+        collection=collection,
         request=context.request,
     )

@@ -12,12 +12,12 @@ from fastapi.templating import Jinja2Templates
 from httpx import AsyncClient
 
 from sia.config import Config, config
-from sia.models.butler_type import ButlerType
 from sia.services.availability import (
     AvailabilityService,
     DirectButlerAvailabilityChecker,
     RemoteButlerAvailabilityChecker,
 )
+from sia.services.data_collections import DataCollectionService
 
 router = APIRouter()
 """FastAPI router for all external handlers."""
@@ -33,7 +33,7 @@ async def test_availability(
     )
     mock_client, mock_response = mock_async_client
 
-    r = await client.get(f"{config.path_prefix}/availability")
+    r = await client.get(f"{config.path_prefix}/dp02/availability")
     assert r.status_code == 200
     template_rendered = templates_dir.get_template("availability.xml").render()
     assert r.text.strip() == template_rendered.strip()
@@ -42,8 +42,12 @@ async def test_availability(
 @pytest.mark.asyncio
 async def test_direct_butler_availability(test_config_direct: Config) -> None:
     """Test the availability of the direct Butler ."""
+    collection = DataCollectionService(
+        config=test_config_direct
+    ).get_data_collection_by_name(name="hsc")
+
     checker = DirectButlerAvailabilityChecker()
-    availability = await checker.check_availability(config=test_config_direct)
+    availability = await checker.check_availability(collection=collection)
     assert availability.available is True
 
 
@@ -52,6 +56,10 @@ async def test_remote_butler_availability_success(
     test_config_remote: Config,
 ) -> None:
     """Test the availability of the remote Butler ."""
+    collection = DataCollectionService(
+        config=test_config_remote
+    ).get_data_collection_by_name(name="dp02")
+
     checker = RemoteButlerAvailabilityChecker()
     with patch("sia.services.availability.AsyncClient") as mock_client:
         mock_response = AsyncMock()
@@ -59,9 +67,7 @@ async def test_remote_butler_availability_success(
         mock_client.return_value.__aenter__.return_value.get.return_value = (
             mock_response
         )
-        availability = await checker.check_availability(
-            config=test_config_remote
-        )
+        availability = await checker.check_availability(collection=collection)
     assert availability.available is True
 
 
@@ -72,6 +78,10 @@ async def test_remote_butler_availability_failure(
     """Test the availability of the remote Butler  when
     it is not available.
     """
+    collection = DataCollectionService(
+        config=test_config_remote
+    ).get_data_collection_by_name(name="dp02")
+
     checker = RemoteButlerAvailabilityChecker()
     with patch("sia.services.availability.AsyncClient") as mock_client:
         mock_response = AsyncMock()
@@ -80,40 +90,17 @@ async def test_remote_butler_availability_failure(
             mock_response
         )
 
-        availability = await checker.check_availability(
-            config=test_config_remote
-        )
-    assert availability.available is False
-
-
-@pytest.mark.asyncio
-async def test_remote_butler_availability_no_config(
-    test_config_remote: Config,
-) -> None:
-    """Test the availability of the remote Butler
-    when there is no configuration.
-    """
-    checker = RemoteButlerAvailabilityChecker()
-    conf = Config()
-    conf.butler_data_collections = []
-    availability = await checker.check_availability(config=conf)
+        availability = await checker.check_availability(collection=collection)
     assert availability.available is False
 
 
 @pytest.mark.asyncio
 async def test_availability_service(test_config_direct: Config) -> None:
     """Test the availability service."""
-    service = AvailabilityService(config=test_config_direct)
-    availability = await service.get_availability()
-    assert availability.available is True
+    collection = DataCollectionService(
+        config=test_config_direct
+    ).get_data_collection_by_name(name="hsc")
 
-
-@pytest.mark.asyncio
-async def test_availability_service_unknown_butler_type(
-    test_config_remote: Config,
-) -> None:
-    """Test the availability service with an unknown butler_type."""
-    service = AvailabilityService(config=test_config_remote)
-    service.checkers.pop(ButlerType.REMOTE)
+    service = AvailabilityService(collection=collection)
     availability = await service.get_availability()
     assert availability.available is True

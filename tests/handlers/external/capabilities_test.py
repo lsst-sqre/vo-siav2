@@ -25,12 +25,14 @@ async def test_capabilities(client: AsyncClient) -> None:
     templates_dir = Jinja2Templates(template_dir)
 
     context = {
-        "capabilities_url": f"https://example.com{config.path_prefix}/capabilities",
-        "availability_url": f"https://example.com{config.path_prefix}/availability",
-        "query_url": f"https://example.com{config.path_prefix}/query",
+        "capabilities_url": f"https://example.com"
+        f"{config.path_prefix}/dp02/capabilities",
+        "availability_url": f"https://example.com"
+        f"{config.path_prefix}/dp02/availability",
+        "query_url": f"https://example.com{config.path_prefix}/dp02/query",
     }
 
-    r = await client.get(f"{config.path_prefix}/capabilities")
+    r = await client.get(f"{config.path_prefix}/dp02/capabilities")
     assert r.status_code == 200
     template_rendered = templates_dir.get_template("capabilities.xml").render(
         context
