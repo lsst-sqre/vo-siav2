@@ -38,7 +38,9 @@ class Factory:
     ) -> None:
         self._config = config
         self._labeled_butler_factory = labeled_butler_factory
-        self._logger = logger if logger else structlog.get_logger("mobu")
+        self._logger = (
+            logger if logger else structlog.get_logger(self._config.name)
+        )
 
     def create_butler(
         self,

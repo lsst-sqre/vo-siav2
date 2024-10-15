@@ -45,13 +45,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     logger.debug("SIA has started up.")
     await labeled_butler_factory_dependency.initialize(config=config)
     await context_dependency.initialize(config=config)
-    await labeled_butler_factory_dependency.initialize(config=config)
 
     yield
 
     await labeled_butler_factory_dependency.aclose()
     await context_dependency.aclose()
-    await labeled_butler_factory_dependency.aclose()
     logger.debug("SIA shut down complete.")
     await http_client_dependency.aclose()
 
