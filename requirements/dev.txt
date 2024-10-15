@@ -4,7 +4,7 @@ annotated-types==0.7.0
     # via
     #   -c requirements/main.txt
     #   pydantic
-anyio==4.6.0
+anyio==4.6.2.post1
     # via
     #   -c requirements/main.txt
     #   httpx
@@ -29,7 +29,7 @@ click==8.1.7
     #   scriv
 click-log==0.4.0
     # via scriv
-coverage==7.6.2
+coverage==7.6.3
     # via
     #   -r requirements/dev.in
     #   pytest-cov
@@ -65,7 +65,7 @@ markupsafe==3.0.1
     #   jinja2
 mdurl==0.1.2
     # via markdown-it-py
-mypy==1.11.2
+mypy==1.12.0
     # via -r requirements/dev.in
 mypy-extensions==1.0.0
     # via mypy

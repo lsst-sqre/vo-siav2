@@ -19,6 +19,7 @@ jinja2
 pydantic
 pydantic-settings
 safir>=5
+psycopg2-binary
 numpy
 astropy
 vo-models
