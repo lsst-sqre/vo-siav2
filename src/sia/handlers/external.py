@@ -3,19 +3,20 @@
 from pathlib import Path
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.templating import Jinja2Templates
 from lsst.dax.obscore.siav2 import SIAv2Parameters, siav2_query
 from safir.dependencies.logger import logger_dependency
 from safir.metadata import get_metadata
 from safir.models import ErrorModel
-from starlette.responses import Response
 from structlog.stdlib import BoundLogger
+from vo_models.vosi.availability import Availability
+from vo_models.vosi.capabilities.models import VOSICapabilities
 
 from ..config import config
 from ..dependencies.context import RequestContext, context_dependency
 from ..dependencies.data_collections import validate_collection
-from ..dependencies.query_params import get_form_params, get_query_params
+from ..dependencies.query_params import get_sia_params_dependency
 from ..dependencies.token import optional_auth_delegated_token_dependency
 from ..models.data_collections import ButlerDataCollection
 from ..models.index import Index
@@ -70,8 +71,23 @@ async def get_index(
 
 @external_router.get(
     "/{collection_name}/availability",
+    response_model=Availability,
     description="VOSI-availability resource for the service",
-    responses={200: {"content": {"application/xml": {}}}},
+    responses={
+        200: {
+            "description": "Successful Response",
+            "content": {
+                "application/xml": {
+                    "example": """<?xml version="1.0" encoding="UTF-8"?>
+<availability xmlns="http://www.ivoa.net/xml/VOSIAvailability/v1.0">
+    <available>true</available>
+</availability>""",
+                    "schema": Availability.model_json_schema(),
+                },
+                "application/json": None,
+            },
+        }
+    },
     summary="IVOA service availability",
 )
 async def get_availability(collection_name: str) -> Response:
@@ -92,7 +108,27 @@ async def get_availability(collection_name: str) -> Response:
 @external_router.get(
     "/{collection_name}/capabilities",
     description="VOSI-capabilities resource for the SIA service.",
-    responses={200: {"content": {"application/xml": {}}}},
+    response_model=VOSICapabilities,
+    responses={
+        200: {
+            "content": {
+                "application/xml": {
+                    "example": """<?xml version="1.0"?>
+    <capabilities
+        xmlns="http://www.ivoa.net/xml/VOSICapabilities/v1.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:vod="http://www.ivoa.net/xml/VODataService/v1.1">
+       <capability standardID="ivo://ivoa.net/std/SIA#query-2.0">
+         <interface xsi:type="vod:ParamHTTP" role="std" version="2.0">
+             <accessURL>https://example.com/query</accessURL>
+         </interface>
+       </capability>
+    </capabilities>""",
+                    "schema": VOSICapabilities.model_json_schema(),
+                }
+            }
+        }
+    },
     summary="IVOA service capabilities",
 )
 async def get_capabilities(
@@ -111,7 +147,7 @@ async def get_capabilities(
                 "get_capabilities", collection_name=collection_name
             ),
             "query_url": request.url_for(
-                "query_get", collection_name=collection_name
+                "query", collection_name=collection_name
             ),
         },
         media_type="application/xml",
@@ -130,25 +166,6 @@ async def get_capabilities(
     },
     summary="IVOA SIA service query",
 )
-def query_get(
-    *,
-    context: Annotated[RequestContext, Depends(context_dependency)],
-    collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
-    params: Annotated[SIAv2Parameters, Depends(get_query_params)],
-    delegated_token: Annotated[
-        str | None, Depends(optional_auth_delegated_token_dependency)
-    ],
-) -> Response:
-    return ResponseHandlerService.process_query(
-        factory=context.factory,
-        params=params,
-        token=delegated_token,
-        sia_query=siav2_query,
-        collection=collection,
-        request=context.request,
-    )
-
-
 @external_router.post(
     "/{collection_name}/query",
     description="Query endpoint for the SIA service (POST method).",
@@ -161,11 +178,11 @@ def query_get(
     },
     summary="IVOA SIA (v2) service query (POST)",
 )
-def query_post(
+async def query(
     *,
     context: Annotated[RequestContext, Depends(context_dependency)],
     collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
-    params: Annotated[SIAv2Parameters, Depends(get_form_params)],
+    params: Annotated[SIAv2Parameters, Depends(get_sia_params_dependency)],
     delegated_token: Annotated[
         str | None, Depends(optional_auth_delegated_token_dependency)
     ],

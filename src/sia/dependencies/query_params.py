@@ -1,44 +1,34 @@
 """Provides functions to get instances of params."""
 
+from collections import defaultdict
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from lsst.dax.obscore.siav2 import SIAv2Parameters
 
-from ..models.sia_query_params import SIAFormParams, SIAQueryParams
+from ..constants import SINGLE_PARAMS
+from ..models.sia_query_params import SIAQueryParams
 
 
-def get_query_params(
+async def get_sia_params_dependency(
+    *,
     params: Annotated[SIAQueryParams, Depends(SIAQueryParams)],
+    request: Request,
 ) -> SIAv2Parameters:
-    """Get the SIAv2Parameters from the query parameters.
+    """Parse GET and POST parameters into SIAv2Parameters for SIA query."""
+    # For POST requests, use form data
+    if request.method == "POST":
+        post_params_ddict: dict[str, list[str]] = defaultdict(list)
 
-    Parameters
-    ----------
-    params
-        The query parameters.
+        for key, value in (await request.form()).multi_items():
+            if not isinstance(value, str):
+                raise TypeError("File upload not supported")
+            post_params_ddict[key].append(value)
 
-    Returns
-    -------
-    SIAv2Parameters
-        The SIAv2Parameters instance.
-    """
-    return params.to_butler_parameters()
+        post_params = {
+            key: (values[0] if key in SINGLE_PARAMS and values else values)
+            for key, values in post_params_ddict.items()
+        }
+        params = SIAQueryParams.from_dict(post_params)
 
-
-def get_form_params(
-    params: Annotated[SIAFormParams, Depends(SIAFormParams)],
-) -> SIAv2Parameters:
-    """Get the SIAv2Parameters from the form parameters.
-
-    Parameters
-    ----------
-    params
-        The form parameters.
-
-    Returns
-    -------
-    SIAv2Parameters
-        The SIAv2Parameters instance.
-    """
     return params.to_butler_parameters()
