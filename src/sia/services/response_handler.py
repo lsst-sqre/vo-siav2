@@ -72,8 +72,7 @@ class ResponseHandlerService:
                 # This may need to be updated if we decide to change the
                 # dax_obscore config to hold multiple collections
                 "resource_identifier": f"{BASE_RESOURCE_IDENTIFIER}/"
-                f"{butler_collection.label}"
-                f"{butler_collection.name}",
+                f"{butler_collection.label}",
                 "access_url": request.url_for(
                     "query", collection_name=butler_collection.name
                 ),
