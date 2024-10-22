@@ -178,7 +178,7 @@ async def get_capabilities(
     },
     summary="IVOA SIA (v2) service query (POST)",
 )
-async def query(
+def query(
     *,
     context: Annotated[RequestContext, Depends(context_dependency)],
     collection: Annotated[ButlerDataCollection, Depends(validate_collection)],
