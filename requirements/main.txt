@@ -47,17 +47,17 @@ astropy==6.1.4 \
     #   lsst-felis
     #   lsst-resources
     #   lsst-utils
-astropy-iers-data==0.2024.10.14.0.32.55 \
-    --hash=sha256:1a7c8e12bfe2af5605fd46dd9f8cb7fc9e9a78328cd231fdf6753b1814efe597 \
-    --hash=sha256:efe7e5b26fa064df08fcda528ea910c79137625208ccc4073addf4f0eb9289a0
+astropy-iers-data==0.2024.10.21.0.33.21 \
+    --hash=sha256:9cb267aff398c2846e38afe7ef09c6d65866c47334064040f8d95aa770f51d99 \
+    --hash=sha256:d37b1cf3d5d986490b80cddc894715bfea728e8cf93e260c60702696d2b41452
     # via astropy
-boto3==1.35.44 \
-    --hash=sha256:18416d07b41e6094101a44f8b881047dcec6b846dad0b9f83b9bbf2f0cd93d07 \
-    --hash=sha256:7f8e8a252458d584d8cf7877c372c4f74ec103356eedf43d2dd9e479f47f3639
+boto3==1.35.45 \
+    --hash=sha256:9f4a081e1940846171b51d903000a04322f1356d53225ce1028fc1760a155a70 \
+    --hash=sha256:f16c7edfcbbeb0a0c22d67d6ebbfcb332fa78d3ea88275e082260ba04fe65347
     # via -r requirements/main.in
-botocore==1.35.44 \
-    --hash=sha256:1fcd97b966ad8a88de4106fe1bd3bbd6d8dadabe99bbd4a6aadcf11cb6c66b39 \
-    --hash=sha256:55388e80624401d017a9a2b8109afd94814f7e666b53e28fce51375cfa8d9326
+botocore==1.35.45 \
+    --hash=sha256:9a898bfdd6b0027fee2018711192c15c2716bf6a7096b1168bd8a896df3664a1 \
+    --hash=sha256:e07e170975721c94ec1e3bf71a484552ad63e2499f769dd14f9f37375b4993fd
     # via
     #   boto3
     #   s3transfer
@@ -307,9 +307,9 @@ deprecated==1.2.14 \
     #   lsst-daf-butler
     #   lsst-daf-relation
     #   lsst-utils
-fastapi==0.115.2 \
-    --hash=sha256:3995739e0b09fa12f984bce8fa9ae197b35d433750d3d312422d846e283697ee \
-    --hash=sha256:61704c71286579cc5a598763905928f24ee98bfcc07aabe84cfefb98812bbc86
+fastapi==0.115.3 \
+    --hash=sha256:8035e8f9a2b0aa89cea03b6c77721178ed5358e1aea4cd8570d9466895c0638c \
+    --hash=sha256:c091c6a35599c036d676fa24bd4a6e19fa30058d93d950216cdc672881f6f7db
     # via
     #   -r requirements/main.in
     #   safir
@@ -1211,9 +1211,9 @@ safir==6.4.0 \
     --hash=sha256:ba7af071eab0d198e6e15a2117028566f3f4237e02e2278e8bfc2633a7c68228 \
     --hash=sha256:f38c3f1d7d76d304984b572288826510e5c7a0e1f965b2eabdd7f3bace07c48a
     # via -r requirements/main.in
-safir-logging==6.5.0 \
-    --hash=sha256:a028b34ace2b1c28e1b3973f1c78a8d8c55742921159178bdc9df366d3e27fb9 \
-    --hash=sha256:cb2052dc620e3d3c11ba353874486e574f6defb1124bb6616f9900688a8ec37a
+safir-logging==6.5.1 \
+    --hash=sha256:b056306de26627e29bd6a6d04b1144456a1319ec0e15a67ebbc12b43362a27cd \
+    --hash=sha256:ff591f0247fda10842835e714a6dbf601a894432d33d6d98e20fe035a5ad952c
     # via safir
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
@@ -1288,9 +1288,9 @@ sqlalchemy==2.0.36 \
     #   lsst-daf-relation
     #   lsst-dax-obscore
     #   lsst-felis
-starlette==0.40.0 \
-    --hash=sha256:1a3139688fb298ce5e2d661d37046a66ad996ce94be4d4983be019a23a04ea35 \
-    --hash=sha256:c494a22fae73805376ea6bf88439783ecfba9aac88a43911b48c653437e784c4
+starlette==0.41.0 \
+    --hash=sha256:39cbd8768b107d68bfe1ff1672b38a2c38b49777de46d2a592841d58e3bf7c2a \
+    --hash=sha256:a0193a3c413ebc9c78bff1c3546a45bb8c8bcb4a84cae8747d650a65bd37210a
     # via
     #   -r requirements/main.in
     #   fastapi
@@ -1367,9 +1367,9 @@ uvloop==0.21.0 ; platform_python_implementation != 'PyPy' and sys_platform != 'c
     --hash=sha256:f3df876acd7ec037a3d005b3ab85a7e4110422e4d9c1571d4fc89b0fc41b6816 \
     --hash=sha256:f7089d2dc73179ce5ac255bdf37c236a9f914b264825fdaacaded6990a7fb4c2
     # via uvicorn
-vo-models==0.4.1 \
-    --hash=sha256:088f09dfd7cbeef38202dc7554168fb32398a64b78bb6f72fdec1bcaab603e40 \
-    --hash=sha256:bc55d1284f511f4453a9b92cd3322699e53bbf54f26134d31840a51e3e883efe
+vo-models==0.4.2 \
+    --hash=sha256:cbca9c22d2ddd4a283c07d1d3e56726e7892b5acf110926417915284caf2583b \
+    --hash=sha256:fc781f8f4746cf9d610687a2ce8a6ceb64717ba56e72ba487cafc4fe6df24907
     # via -r requirements/main.in
 watchfiles==0.24.0 \
     --hash=sha256:01550ccf1d0aed6ea375ef259706af76ad009ef5b0203a3a4cce0f6024f9b68a \
