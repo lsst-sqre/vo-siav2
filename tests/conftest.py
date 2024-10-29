@@ -64,7 +64,6 @@ async def app(monkeypatch: pytest.MonkeyPatch) -> AsyncIterator[FastAPI]:
             name="dp02",
             butler_type=ButlerType.REMOTE,
             repository=HttpUrl("https://example/repo/dp02/butler.yaml"),
-            default_instrument="LSSTCam-imSim",
         ),
     ]
     monkeypatch.setattr(config, "path_prefix", "/api/sia")
@@ -104,7 +103,6 @@ async def app_direct(
             butler_type=ButlerType.DIRECT,
             label="ci_hsc_gen3",
             name="hsc",
-            default_instrument="HSC",
         ),
     ]
 
@@ -153,7 +151,6 @@ async def test_config_remote() -> Config:
                 "https://example.com/api/butler/repo/dp02/butler" ".yaml"
             ),
             butler_type=ButlerType.REMOTE,
-            default_instrument="LSSTCam-imSim",
         ),
     ]
     return Config(
@@ -182,7 +179,6 @@ async def test_config_direct() -> Config:
             butler_type=ButlerType.DIRECT,
             label="ci_hsc_gen3",
             name="hsc",
-            default_instrument="LSSTCam-imSim",
         ),
     ]
 

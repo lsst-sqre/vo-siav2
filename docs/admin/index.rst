@@ -42,10 +42,6 @@ butlerDataCollections
 
     Example: ``"https://data-dev.lsst.cloud/api/datalink/links?ID=butler%3A//dp02/{id}"``.
 
-**default_instrument** (required)
-    The default instrument for this repository.
-
-    Example: ``"LSSTCam-imSim"``. Note that this will be deprecated in future releases.
 
 directButlerEnabled
 -------------------
