@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import structlog
 from lsst.daf.butler import Butler, LabeledButlerFactory
-from lsst.daf.butler.registry import RegistryDefaults
 from lsst.dax.obscore import ExporterConfig
 from structlog.stdlib import BoundLogger
 
@@ -66,15 +65,9 @@ class Factory:
         Butler
             The Butler instance.
         """
-        butler = self._labeled_butler_factory.create_butler(
+        return self._labeled_butler_factory.create_butler(
             label=butler_collection.label, access_token=token
         )
-
-        # Temporary workaround
-        butler.registry.defaults = RegistryDefaults(
-            instrument=butler_collection.default_instrument,
-        )
-        return butler
 
     def create_obscore_config(self, label: str) -> ExporterConfig:
         """Create an Obscore config object for a given label.

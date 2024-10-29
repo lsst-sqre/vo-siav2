@@ -72,15 +72,6 @@ class ButlerDataCollection:
     ]
     """The Butler type for this data collection."""
 
-    default_instrument: Annotated[
-        str,
-        Field(
-            default=None,
-            description="The default instrument for the data collection",
-        ),
-    ]
-    """The default instrument for the data collection"""
-
     datalink_url: Annotated[
         HttpUrl | None,
         Field(
