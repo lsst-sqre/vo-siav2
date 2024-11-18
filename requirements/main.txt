@@ -118,6 +118,7 @@ certifi==2024.8.30 \
     #   httpcore
     #   httpx
     #   requests
+    #   sentry-sdk
 cffi==1.17.1 \
     --hash=sha256:045d61c734659cc045141be4bae381a41d89b741f795af1dd018bfb532fd0df8 \
     --hash=sha256:0984a4925a435b1da406122d4d7968dd861c1385afe3b45ba82b750f229811e2 \
@@ -1451,6 +1452,10 @@ safir-logging==6.5.1 \
     --hash=sha256:b056306de26627e29bd6a6d04b1144456a1319ec0e15a67ebbc12b43362a27cd \
     --hash=sha256:ff591f0247fda10842835e714a6dbf601a894432d33d6d98e20fe035a5ad952c
     # via safir
+sentry-sdk==2.18.0 \
+    --hash=sha256:0dc21febd1ab35c648391c664df96f5f79fb0d92d7d4225cd9832e53a617cafd \
+    --hash=sha256:ee70e27d1bbe4cd52a38e1bd28a5fadb9b17bc29d91b5f2b97ae29c0a7610442
+    # via -r requirements/main.in
 six==1.16.0 \
     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926 \
     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254
