@@ -19,6 +19,7 @@ google-cloud-storage
 requests
 jinja2
 pydantic
+pydantic-xml
 pydantic-settings
 safir>=5
 numpy
@@ -26,4 +27,4 @@ astropy
 vo-models
 defusedxml
 lsst-daf-butler[postgres, remote]
-lsst-dax-obscore @ git+https://github.com/lsst-dm/dax_obscore@main#egg=lsst-dax-obscore
+lsst-dax-obscore

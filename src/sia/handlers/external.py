@@ -27,7 +27,7 @@ from ..services.response_handler import ResponseHandlerService
 BASE_DIR = Path(__file__).resolve().parent.parent
 _TEMPLATES = Jinja2Templates(directory=str(Path(BASE_DIR, "templates")))
 
-__all__ = ["get_index", "external_router"]
+__all__ = ["external_router", "get_index"]
 
 external_router = APIRouter()
 """FastAPI router for all external handlers."""
@@ -39,7 +39,6 @@ external_router = APIRouter()
         "Document the top-level API here. By default it only returns metadata"
         " about the application."
     ),
-    response_model=Index,
     response_model_exclude_none=True,
     summary="Application metadata",
 )
