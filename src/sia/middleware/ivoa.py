@@ -17,7 +17,7 @@ class CaseInsensitiveFormMiddleware:
     FastAPI to perform input validation on the POST parameters.
     """
 
-    def __init__(self, *, app: ASGIApp) -> None:
+    def __init__(self, app: ASGIApp) -> None:
         """Initialize the middleware with the ASGI application.
 
         Parameters
