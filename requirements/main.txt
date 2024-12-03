@@ -653,12 +653,7 @@ jsonschema-specifications==2024.10.1 \
     --hash=sha256:0f38b83639958ce1152d02a7f062902c41c8fd20d558b0c34344292d417ae272 \
     --hash=sha256:a09a0680616357d9a0ecf05c12ad234479f549239d0f5b55f3deea67475da9bf
     # via jsonschema
-lsst-daf-butler==28.2024.4700 \
-    --hash=sha256:496ab057c9d08cdffbfba6801ad95d9936355a8595e99e9d0767f2f9fb3c65f9 \
-    --hash=sha256:6d3a46859eda595a00d509b215885b6f1396f8b4238ebd4397f43a066f009fc3
-    # via
-    #   -r requirements/main.in
-    #   lsst-dax-obscore
+lsst-daf-butler @ git+https://github.com/lsst/daf_butler@tickets/DM-47889#egg=lsst-daf-butler
 lsst-daf-relation==28.2024.4700 \
     --hash=sha256:95258dd08762212d9f6a8c0c0f55425ba12c893a0e5128463b5990b90e9dda9e \
     --hash=sha256:969425558a55832b36142d03ce27c01df2275ca905ad1df040ea6f3ee60cc054
