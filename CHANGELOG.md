@@ -7,6 +7,13 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-0.1.4'></a>
+## 0.1.4  (2024-12-22)
+
+### Bug fixes
+
+- Fixed missing attribute (type) in VOTable Error resource element
+
 <a id='changelog-0.1.3'></a>
 ## 0.1.3  (2024-10-29)
 
