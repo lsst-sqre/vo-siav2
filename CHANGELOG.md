@@ -7,8 +7,15 @@ Find changes for the upcoming release in the project's [changelog.d directory](h
 
 <!-- scriv-insert-here -->
 
+<a id='changelog-0.1.5'></a>
+## 0.1.5  (2024-12-21)
+
+### Bug fixes
+
+- Update dependencies
+
 <a id='changelog-0.1.4'></a>
-## 0.1.4  (2024-12-22)
+## 0.1.4  (2024-12-12)
 
 ### Bug fixes
 
